@@ -1,64 +1,87 @@
 <div align="center">
-  <img src="assets/feather-256.png" width="96" height="96" alt="PerfHub feather logo">
   <h1>PerfHub</h1>
   <h3>Your PC. One control hub.</h3>
-  <p>Explore your hardware, review tuning options, estimate your PC’s value,<br>and plan your next build from one Windows desktop application.</p>
-  <p>
-    <img src="https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square" alt="Platform: Windows">
-    <img src="https://img.shields.io/badge/License-GPL--3.0-4c956c?style=flat-square" alt="License: GPL-3.0">
-    <img src="https://img.shields.io/badge/PC_Value_Checker-Beta-d99a2b?style=flat-square" alt="PC Value Checker: Beta">
-  </p>
-  <p><a href="#download--run"><b>Download &amp; run</b></a> &nbsp; • &nbsp; <a href="#whats-inside"><b>Explore features</b></a> &nbsp; • &nbsp; <a href="#build-from-source"><b>Build from source</b></a></p>
+  <p>PC tools, hardware information, value estimates, and build planning<br>in one Windows desktop application.</p>
+  <p><b>Windows desktop app &nbsp; · &nbsp; GPL-3.0 &nbsp; · &nbsp; PC Value Checker Beta</b></p>
+  <p><a href="#easy-install-guide"><b>How to install</b></a> &nbsp; | &nbsp; <a href="https://perfhub-download.plumheron1.chatgpt.site/"><b>Visit the website</b></a> &nbsp; | &nbsp; <a href="#features"><b>Features</b></a></p>
 </div>
 
 ---
 
-## Download & run
+## Easy install guide
 
-**Just want to use PerfHub? Download the EXE from this repository’s Releases section. You do not need Python or any build tools.**
+**You only need the PerfHub EXE. You do not need Python, source code, or developer tools.**
 
-1. Open **Releases** on the repository’s main page and choose the latest release.
-2. Under **Assets**, download the **PerfHub `.exe`**. The source ZIP is for developers.
-3. Run the EXE and approve the Windows administrator prompt if you want to launch the application.
-4. On your first launch, choose whether to create a desktop shortcut.
+### 1. Download
+
+On this repository’s main page, click **Releases**, then open the newest release. Under **Assets**, click the file ending in **`.exe`**.
+
+Choose the **PerfHub EXE**, rather than **Source code (zip)** or **Source code (tar.gz)**.
+
+### 2. Open
+
+Wait for the download to finish. Open your **Downloads** folder and double-click the PerfHub EXE.
+
+Windows will ask for administrator permission. Check that you are opening the PerfHub file you downloaded, then choose **Yes** to start it.
+
+### 3. Choose your shortcut
+
+The first time PerfHub runs, it asks whether you want a desktop shortcut. Choose **Yes** for easy access next time, or **No** to continue without one.
+
+### 4. Start using PerfHub
+
+Choose a tool from the sidebar. The sidebar closes to give the page more room; click **Show sidebar** or press **Ctrl+B** to open it again.
+
+**That’s it. There is no separate installer to run after opening the EXE.** Keep the EXE in a folder where you want it to stay, especially if you create a shortcut to it.
+
+<details>
+<summary><b>Need help getting started?</b></summary>
+
+- **Where is my download?** Open File Explorer and choose **Downloads**.
+- **I downloaded a folder of code.** Go back to the release and download the file ending in `.exe` under **Assets**.
+- **The website tabs do not load.** Install Microsoft Edge WebView2 Runtime if it is missing, then reopen PerfHub. Website browser checks and access restrictions may also affect loading.
+- **AI or live pricing is unavailable.** Check your internet connection. These features also depend on external services and available Gemini quota.
+- **Do I need Python?** No. Python is only needed if you want to work with the source code.
+
+</details>
+
+## PerfHub website
+
+### [Visit the PerfHub website →](https://perfhub-download.plumheron1.chatgpt.site/)
+
+The PerfHub website introduces the application, shows its main tools through interface previews and feature tours, and provides a Windows download button. Use it to learn what PerfHub does before downloading.
+
+**The desktop app runs on your computer.** The website is a place to explore PerfHub and get the download; it does not apply Windows tweaks to your PC through your browser. For the newest published version, use this repository’s latest release.
+
+## Features
 
 <table>
-  <tr><th>For everyday users</th><th>For developers</th></tr>
-  <tr><td>Download the release EXE and run it.</td><td>Download or clone the source and follow the build instructions below.</td></tr>
-  <tr><td>No Python installation required.</td><td>Python and C# build tools are required.</td></tr>
+  <tr><th>Tool</th><th>What it does</th></tr>
+  <tr><td><b>PC Value Checker · Beta</b></td><td>Upload a PC photo, enter components, or use your detected hardware. Choose a country and currency to estimate new replacement and used resale value, with ranges, explanations, and sources where available.</td></tr>
+  <tr><td><b>3D PC Builder</b></td><td>Open BuildCores at its Create New Build page inside PerfHub.</td></tr>
+  <tr><td><b>Bottleneck calculator</b></td><td>Use the PC Builds website inside a full-size application tab.</td></tr>
+  <tr><td><b>AI assistant</b></td><td>Ask about your PC and PerfHub’s tools through the Gemini connection.</td></tr>
+  <tr><td><b>Hardware information</b></td><td>View detected components, system information, and live CPU and RAM usage.</td></tr>
+  <tr><td><b>Tuning &amp; Windows tools</b></td><td>Review presets, individual tweaks, game profiles, storage tools, backups, and activity records.</td></tr>
+  <tr><td><b>Drivers &amp; App Starter</b></td><td>Review driver support information and choose application packages.</td></tr>
+  <tr><td><b>Benchmark &amp; themes</b></td><td>Run a browser rendering benchmark and customize the application’s appearance.</td></tr>
 </table>
 
-**Requirements:** Windows; internet access for AI, live pricing, and external websites; Microsoft Edge WebView2 Runtime for embedded website tabs. WebView2 may already be installed. AI availability depends on the Gemini service and its quota.
+### Before you use online tools
 
-## What’s inside
+AI, live prices, and embedded websites need internet access. PC valuations are estimates, not guaranteed sale prices; some results use comparable parts or low-confidence estimates, and missing prices can produce partial totals. Review the component details and sources. Read proposed Windows changes before applying them.
 
-<table>
-  <tr><th>Feature</th><th>What you can do</th></tr>
-  <tr><td><b>PC Value Checker · Beta</b></td><td>Upload a photo, review or enter components, or use detected PC hardware. Choose a country and currency to see new replacement and used resale ranges, explanations, and sources where available.</td></tr>
-  <tr><td><b>3D PC Builder</b></td><td>Open BuildCores directly at its Create New Build page inside PerfHub.</td></tr>
-  <tr><td><b>Bottleneck calculator</b></td><td>Access the PC Builds calculator in an embedded tab with a full-size content area.</td></tr>
-  <tr><td><b>AI assistant</b></td><td>Ask questions about your PC and PerfHub’s tools using the Gemini connection.</td></tr>
-  <tr><td><b>Hardware &amp; monitoring</b></td><td>Review detected components, system information, and live CPU and RAM usage.</td></tr>
-  <tr><td><b>Tuning &amp; Windows tools</b></td><td>Explore presets, individual tweaks, game profiles, storage tools, backups, and activity records.</td></tr>
-  <tr><td><b>Drivers &amp; App Starter</b></td><td>Review driver support information and use selectable application packages.</td></tr>
-  <tr><td><b>Benchmark &amp; customization</b></td><td>Run the browser rendering benchmark, change themes, and use the collapsible sidebar.</td></tr>
-</table>
+See [release notes](RELEASE_NOTES.md) for the latest changes documented with this source package.
 
-### A cleaner workspace
+## Open source
 
-PerfHub starts maximized, preserves its opening animation, and collapses the sidebar when you select a page. Use the sidebar toggle or **Ctrl+B** to reopen it. Embedded pages fill the available content area.
-
-### About the estimates
-
-PC valuations are estimates rather than guaranteed sale prices. Results distinguish current listings, comparable replacements, and low-confidence AI estimates. Missing prices can produce partial totals. Confirm component details and review the linked sources before relying on an estimate. External websites may impose browser checks or other access restrictions.
-
-Read [the release notes](RELEASE_NOTES.md) for the changes since the earlier App Packages build.
+Project-owned code is licensed under **GNU GPL version 3 only (GPL-3.0-only)**. Read [LICENSE](LICENSE) for the full terms. Third-party components retain their own licenses; WebView2 license and notice files are included in `ai/`.
 
 ---
 
-## Build from source
+## For developers
 
-**This section is for developers. It is not required to use the release EXE.**
+**Regular users can skip this section. Downloading and running the release EXE is enough.**
 
 <details>
 <summary><b>Expand developer setup and build instructions</b></summary>
@@ -110,13 +133,4 @@ The helper programs in `ai/` are also required for AI and embedded browser featu
 
 </details>
 
-## Source & license
-
-The GeminiChat source is included, and the main build compiles all application-owned C# helpers from source. The shared Gemini credential is retained at the owner’s request; AI operations require service access and available quota.
-
-Project-owned code is licensed under **GNU GPL version 3 only (GPL-3.0-only)**. See [LICENSE](LICENSE) for the full terms. Third-party dependencies retain their own licenses; the WebView2 license and notices are in `ai/`.
-
-<div align="center">
-  <hr>
-  <p><b>PerfHub</b><br>PC tools, component estimates, and build planning in one place.</p>
-</div>
+The GeminiChat source is included, and the main build compiles the application-owned C# helpers. The shared Gemini credential is retained at the owner’s request; service access and quota still apply.
