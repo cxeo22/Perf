@@ -30,11 +30,14 @@ def latest_plan(keys,executable,stop,emit,enable_ai=True):
     emit(('phase','AI is reviewing the current release sources…'))
     try:
         from drivers import ask_ai
-        answer=ask_ai({'task':'apps','apps':list(records.values())})
+        reviews=[{**record,'evidence':record['evidence'][:2000]} for record in list(records.values())[:20]]
+        review_ids={record['id'] for record in reviews}
+        answer=ask_ai({'task':'apps','apps':reviews})
         text=answer.get('text','');a=text.index('{');b=text.rindex('}')+1
         response=json.loads(text[a:b])
         for item in response.get('items',[]):
             key=item.get('id');record=records.get(key)
+            if key not in review_ids:continue
             if not record or not record['version'] or item.get('version')!=record['version'] or item.get('package')!=record['package']:continue
             if item.get('approved') is not True:continue
             record['ai']=True

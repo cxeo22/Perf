@@ -17,7 +17,7 @@ hubplus.install(vars(app))
 hub=app.Hub(show_intro=False,enable_ai=False)
 errors=[];hub.report_callback_exception=lambda *args:errors.append(args)
 def pump():
-    for _ in range(5):hub.update();time.sleep(.025)
+    for _ in range(9):hub.update();time.sleep(.025)
 try:
     pump()
     assert hub.state()=='zoomed' and not hub.sidebar_collapsed
@@ -26,8 +26,18 @@ try:
     hub.pc_value.parts['CPU'].set('Preserved component')
     with patch.object(hub,'launch') as external:
         hub.nav[19].command();pump()
-        assert hub.cur_tab==19 and hub.sidebar_collapsed
+        assert hub.cur_tab==19 and not hub.sidebar_collapsed
+        assert hub.sidebar.winfo_ismapped()
+        assert hub.content.winfo_width()==narrow
         external.assert_not_called()
+    hub.toggle_sidebar();hub.update()
+    assert hub.sidebar_fade.job is not None
+    time.sleep(.065);hub.update()
+    halfway=hub.sidebar.winfo_x()
+    assert -244<halfway<0,halfway
+    assert hub.sidebar.winfo_width()==244
+    assert hub.content.winfo_width()==narrow
+    pump()
     assert not hub.sidebar.winfo_ismapped()
     assert hub.content.winfo_width()>=narrow+200
     assert hub.site_frame.winfo_width()>narrow
@@ -54,10 +64,9 @@ try:
     label=hub.chrome.find_withtag('sidebar-toggle-label')[0]
     assert hub.chrome.itemcget(label,'text')=='Hide sidebar'
     hub.nav[24].command();pump()
-    assert hub.cur_tab==24 and hub.sidebar_collapsed
+    assert hub.cur_tab==24 and not hub.sidebar_collapsed
     assert hub.pc_value.parts['CPU'].get()=='Preserved component'
-    hub.toggle_sidebar();pump()
-    assert not hub.sidebar_collapsed
+    assert not hub.sidebar_collapsed and hub.sidebar.winfo_ismapped()
     for _ in range(7):
         hub.toggle_sidebar();hub.update();time.sleep(.008)
     pump()
@@ -69,4 +78,4 @@ try:
     assert hub.state()=='normal'  # Startup maximization does not override later choices.
     assert not errors,errors
 finally:hub.destroy()
-print('PASS: maximized launch, auto-collapse on tab selection, expanded website area, menu restore, preserved page inputs and normal window restore.')
+print('PASS: maximized launch, sidebar stays open on tab selection, animated manual collapse, expanded website area, menu restore, preserved page inputs and normal window restore.')

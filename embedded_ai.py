@@ -1,5 +1,6 @@
 """Lifecycle and theme bridge for the in-tab Windows Forms AI control."""
 import json
+import queue
 import subprocess
 import threading
 from pathlib import Path
@@ -8,6 +9,7 @@ class EmbeddedAI:
     def __init__(self,parent,colors,events,offline_test=False):
         self.parent=parent;self.colors=colors;self.events=events;self.process=None;self.closed=False
         self.offline_test=offline_test
+        self._writer_process=None;self._commands=None;self._pending_state={};self._writer_lock=threading.Lock()
 
     def start(self):
         if self.closed or (self.process is not None and self.process.poll() is None):return
@@ -34,10 +36,30 @@ class EmbeddedAI:
         threading.Thread(target=read,daemon=True).start()
 
     def send(self,command):
-        if self.process is None or self.process.poll() is not None:return False
-        try:
-            self.process.stdin.write(json.dumps(command,ensure_ascii=True)+'\n');self.process.stdin.flush();return True
-        except (OSError,ValueError):return False
+        process=self.process
+        if process is None or process.poll() is not None:return False
+        # Never wait on a native UI process or a full pipe on Tk's event thread.
+        with self._writer_lock:
+            if self._writer_process is not process:
+                self._writer_process=process
+                commands=queue.Queue(maxsize=128);self._commands=commands;pending={};self._pending_state=pending
+                def write():
+                    try:
+                        while process.poll() is None:
+                            try:lines=[commands.get(timeout=.05)]
+                            except queue.Empty:
+                                with self._writer_lock:
+                                    lines=list(pending.values());pending.clear()
+                            for line in lines:process.stdin.write(line);process.stdin.flush()
+                    except (OSError,ValueError):pass
+                threading.Thread(target=write,daemon=True).start()
+            op=command.get('op');line=json.dumps(command,ensure_ascii=True)+'\n'
+            self._pending_state.pop(op,None)
+            try:self._commands.put_nowait(line);return True
+            except queue.Full:
+                if op in ('visibility','theme'):
+                    self._pending_state[op]=line;return True
+                return False
 
     def update_theme(self):return self.send({'op':'theme',**self.colors()})
 

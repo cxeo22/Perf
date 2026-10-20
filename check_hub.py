@@ -24,8 +24,8 @@ for i in range(len(hub.tabs)):
     hub.show_tab(i);hub.update()
 hub._show_info({'cpu':'Test CPU','gpu':'Test GPU','ram':'16'},app.PRESET_ORDER[0],'Test recommendation',[])
 hub.update()
-assert len(hub.tabs)==26
-assert len([n for n in hub.nav if n.winfo_manager()])==19
+assert len(hub.tabs)==27
+assert len([n for n in hub.nav if n.winfo_manager()])==20
 assert hub.nav[24].winfo_manager()=='pack'
 assert hub.nav[25].winfo_manager()=='pack'
 hub.nav[25].command()
@@ -40,7 +40,7 @@ with patch.object(hub,'launch') as external:
     external.assert_not_called()
 assert hub.nav[22].winfo_manager()=='pack'
 assert hub.nav[23].winfo_manager()=='pack'
-assert len(hub.app_starter.choices)==13
+assert len(hub.app_starter.choices)==100
 assert not hub.app_starter.runner.busy
 hub.app_starter.mode._pick('Install apps')
 assert hub.app_starter.start_button.label=='Install selected'
@@ -53,7 +53,7 @@ with patch.object(hub.app_starter.runner,'start',return_value=False) as start:
     hub.app_starter.choices['steam'].set(False)
     hub.app_starter.toggle_details('discord')
     assert 'Discord' in hub.app_starter.detail_text('discord')
-    assert len(hub.app_starter.logos)==13
+    assert len(hub.app_starter.logos)==100
     hub.app_starter.start_selected()
     assert start.call_args.args[0]==['chrome','epic','discord','spotify','medal']
     assert start.call_args.args[1]=='download'
@@ -214,4 +214,4 @@ assert 'Test CPU' in context['snapshot'] and 'PRIVATE' not in context['snapshot'
 hub.ai_context_enabled.set(False)
 assert hub.ai_context_message()['snapshot']==''
 hub.destroy()
-print('PASS: 26 pages, idle automation, drivers page, AI draft/theme wiring (mocked), render validation, theme cycling, batch customization, animations and intro. No tuning applied.')
+print('PASS: 27 pages, idle automation, drivers page, AI draft/theme wiring (mocked), render validation, theme cycling, batch customization, animations and intro. No tuning applied.')

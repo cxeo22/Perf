@@ -22,3 +22,12 @@ with patch('app_sources.subprocess.run') as process,patch('drivers.ask_ai') as a
     assert latest_plan(['chrome'],'winget.exe',stop,events.append)=={}
     process.assert_not_called();ai.assert_not_called()
 print('PASS: live-source parsing, constrained AI approval, invented-package/version/URL rejection, offline fallback, bounded app-only payload and cancellation. No app installs/downloads or AI calls.')
+
+# Bulk reviews have a bounded prompt and cannot approve an app outside the review.
+from app_starter import APPS
+keys=[k for k in APPS if k!='nvidia'][:21]
+with patch('app_sources.subprocess.run',return_value=subprocess.CompletedProcess([],0,metadata,'')),patch('drivers.ask_ai',return_value={'text':json.dumps({'items':[{'id':keys[-1],'package':APPS[keys[-1]][3],'version':'999.1','approved':True}]})}) as ai:
+    plan=latest_plan(keys,'winget.exe',threading.Event(),lambda _:None)
+    assert len(ai.call_args.args[0]['apps'])==20
+    assert not plan[keys[-1]].get('ai')
+print('PASS: bulk AI release review stays bounded and cannot approve unreviewed packages.')

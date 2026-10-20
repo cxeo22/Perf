@@ -30,7 +30,7 @@ The first time PerfHub runs, it asks whether you want a desktop shortcut. Choose
 
 ### 4. Start using PerfHub
 
-Choose a tool from the sidebar. The sidebar closes to give the page more room; click **Show sidebar** or press **Ctrl+B** to open it again.
+Choose a tool from the sidebar. It stays open when you switch tabs. Click **Hide sidebar** or press **Ctrl+B** to slide it closed; use **Show sidebar** or **Ctrl+B** to slide it open again.
 
 **That’s it. There is no separate installer to run after opening the EXE.** Keep the EXE in a folder where you want it to stay, especially if you create a shortcut to it.
 
@@ -39,7 +39,7 @@ Choose a tool from the sidebar. The sidebar closes to give the page more room; c
 
 - **Where is my download?** Open File Explorer and choose **Downloads**.
 - **I downloaded a folder of code.** Go back to the release and download the file ending in `.exe` under **Assets**.
-- **The website tabs do not load.** Install Microsoft Edge WebView2 Runtime if it is missing, then reopen PerfHub. Website browser checks and access restrictions may also affect loading.
+- **The website tabs do not load.** Install Microsoft Edge WebView2 Runtime if it is missing, then reopen PerfHub. The tabs open directly inside PerfHub and automatically retry temporary loading failures. Website browser checks and access restrictions can still require your attention.
 - **AI or live pricing is unavailable.** Check your internet connection. These features also depend on external services and available Gemini quota.
 - **Do I need Python?** No. Python is only needed if you want to work with the source code.
 
@@ -63,7 +63,7 @@ The PerfHub website introduces the application, shows its main tools through int
   <tr><td><b>AI assistant</b></td><td>Ask about your PC and PerfHub’s tools through the Gemini connection.</td></tr>
   <tr><td><b>Hardware information</b></td><td>View detected components, system information, and live CPU and RAM usage.</td></tr>
   <tr><td><b>Tuning &amp; Windows tools</b></td><td>Review presets, individual tweaks, game profiles, storage tools, backups, and activity records.</td></tr>
-  <tr><td><b>Drivers &amp; App Starter</b></td><td>Review driver support information and choose application packages.</td></tr>
+  <tr><td><b>Drivers &amp; App Starter</b></td><td>Review driver support information and browse 100 curated apps with search, categories, setup bundles, and optional AI help for failed downloads or installs.</td></tr>
   <tr><td><b>Benchmark &amp; themes</b></td><td>Run a browser rendering benchmark and customize the application’s appearance.</td></tr>
 </table>
 
@@ -72,6 +72,29 @@ The PerfHub website introduces the application, shows its main tools through int
 AI, live prices, and embedded websites need internet access. PC valuations are estimates, not guaranteed sale prices; some results use comparable parts or low-confidence estimates, and missing prices can produce partial totals. Review the component details and sources. Read proposed Windows changes before applying them.
 
 See [release notes](RELEASE_NOTES.md) for the latest changes documented with this source package.
+
+### App Starter: 100-app library
+
+Browse 100 curated apps for setting up a new PC, including browsers, media tools, launchers, productivity apps, developer tools and hardware utilities. The collection is not a measured worldwide download ranking. See the [full app list and official sources](APP_LIBRARY.md).
+
+Browse all 100 apps on one continuously scrolling page, with bundled app artwork. Search by name or filter by category; selections stay selected while filtering. The original setup packages remain available alongside New PC essentials, Developer and Creative tools bundles. Nothing is installed merely by browsing or selecting apps.
+
+If a download or installation fails, the app records the return code and a redacted log excerpt. Choose the failed app from the failure picker or use **Help fix this** on its card. The help window provides local guidance, **Ask AI to explain**, an explicit retry button, and the official website. AI receives the app/error details and the displayed redacted log excerpt when requested; it does not automatically execute fixes. Local guidance remains available if AI is disabled or unavailable. Retry download does not silently switch to installation.
+
+### Daily Tools
+
+Open **Daily Tools** in the sidebar for these local utilities:
+
+- **Image to text:** choose or paste a screenshot/photo, extract text, edit it, and copy it or save a UTF-8 TXT file. Uses Windows OCR and the installed Windows language support; no upload or AI key is needed. Review recognized text for mistakes.
+- **Image converter & resizer:** batch-export PNG, JPEG, WebP, BMP or ICO, with optional maximum width/height. Proportions are preserved; images are not enlarged. ICO uses transparent square padding up to 256 pixels.
+- **Images to PDF:** add up to 50 images, reorder the pages, and create a PDF. Each image becomes one page, with a 2400-pixel size limit for larger images.
+- **Text toolbox:** trim, deduplicate or sort lines, remove blank lines, change case, format JSON, and encode/decode URLs or Base64. Includes Undo, Copy and Save TXT.
+- **File checksum:** calculate SHA-256 and compare it with a publisher-provided value. A match verifies identical contents, not whether a file is safe.
+- **Image color picker:** click an image preview to sample its corresponding original pixel and read RGB values or copy the HEX color.
+
+Optional switches keep PerfHub on top or keep the PC/display awake while PerfHub remains open. Turning off keep-awake or closing PerfHub releases its sleep request. These tools do not require PowerToys.
+
+Image/PDF exports use new filenames and do not overwrite originals. Transparency becomes white for JPEG, BMP and PDF; image exports omit source EXIF/GPS metadata. Animated inputs export their first frame. OCR requires an installed Windows OCR language (Windows Settings → Time & language → Language & region).
 
 ## Open source
 
@@ -134,3 +157,5 @@ The helper programs in `ai/` are also required for AI and embedded browser featu
 </details>
 
 The GeminiChat source is included, and the main build compiles the application-owned C# helpers. The shared Gemini credential is retained at the owner’s request; service access and quota still apply.
+
+Developer checks for Daily Tools: `check_daily_tools.py` uses Pillow and pypdf; `--ocr` also checks the real Windows OCR engine using generated images. `check_daily_tools_ui.py` uses mocked file dialogs and temporary generated files.

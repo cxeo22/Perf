@@ -18,6 +18,7 @@ from first_run import offer_desktop_shortcut
 from automation import AutomationPage
 from drivers import DriversPage
 from app_starter import AppStarterPage
+from daily_tools import DailyToolsPage
 from pc_value import PCValuePage
 from branding import window_icon
 from window_chrome import WindowChrome
@@ -114,7 +115,7 @@ def install(g):
                       ('Presets',self.presets_page),('Tools',self.tools_overview),
                       ('Windows tweaks',self.windows_page),('Appearance',self.appearance_page),
                       ('Bottleneck calculator',self.bottleneck_page),('AI',self.ai_page),
-                      ('Auto clicker',self.automation_page),('Drivers',self.drivers_page),('App Starter',self.app_starter_page),('PC Value Checker',self.pc_value_page),('3D PC Builder',self.builder_page)]
+                      ('Auto clicker',self.automation_page),('Drivers',self.drivers_page),('App Starter',self.app_starter_page),('PC Value Checker',self.pc_value_page),('3D PC Builder',self.builder_page),('Daily Tools',self.daily_tools_page)]
             for name, build in extras:
                 tab = tk.Frame(self.content, bg=BG)
                 self.tabs.append(tab)
@@ -126,7 +127,7 @@ def install(g):
                     self.nav[i]=Nav(side,'','',lambda:None,height=28)
             groups=[('TUNE',[('Home',0),('Presets',15),('Individual tweaks',1),('Game profiles',3),('Benchmark',8),('Bottleneck tester',19),('3D PC Builder',25),('AI assistant',20)]),
                     ('WINDOWS',[('Windows tweaks',17),('Storage',9),('Drivers',22),('App Starter',23),('PC Value Checker',24)]),
-                    ('MANAGE',[('Tools',16),('Auto clicker',21),('Backups & fixes',11),('Appearance',18),('Help',6),('Activity',7)])]
+                    ('MANAGE',[('Daily Tools',26),('Tools',16),('Auto clicker',21),('Backups & fixes',11),('Appearance',18),('Help',6),('Activity',7)])]
             for title,links in groups:
                 tk.Label(side,text=title,bg=SIDE,fg=MUTED,font=(UI,8)).pack(anchor='w',padx=22,pady=(9,3))
                 for name,i in links:
@@ -154,9 +155,9 @@ def install(g):
 
         def _apply_sidebar_layout(self,collapsed):
             if collapsed:
-                self.sidebar.pack_forget();self.sidebar_divider.pack_forget()
+                self.sidebar_slot.pack_forget();self.sidebar_divider.pack_forget()
             else:
-                self.sidebar.pack(side='left',fill='y',before=self.content)
+                self.sidebar_slot.pack(side='left',fill='y',before=self.content)
                 self.sidebar_divider.pack(side='left',fill='y',before=self.content)
 
         def toggle_sidebar(self):
@@ -164,8 +165,9 @@ def install(g):
             return 'break'
 
         def show_tab(self,i):
+            if i==self.cur_tab:return
+            previous=self.cur_tab
             super().show_tab(i)
-            if self._navigation_ready:self.set_sidebar_collapsed(True)
             if i in (19,25):self.tabs[i].pack_configure(padx=0,pady=0)
             if self.ai_bridge is not None:
                 self.ai_bridge.send({'op':'visibility','visible':i==20})
@@ -176,7 +178,7 @@ def install(g):
             if self.builder_bridge is not None:
                 self.builder_bridge.send({'op':'visibility','visible':i==25})
             intro=getattr(self,'intro',None)
-            if i not in (19,20,25) and (not self.show_intro or (intro is not None and intro.closed)):
+            if previous in (19,20,25) and i not in (19,20,25) and (not self.show_intro or (intro is not None and intro.closed)):
                 self.focus_force()
 
         def _methods_page(self, tab):
@@ -368,6 +370,9 @@ def install(g):
         def automation_page(self,tab):
             self.automation=AutomationPage(self,tab,g,ROOT)
 
+        def daily_tools_page(self,tab):
+            self.daily_tools=DailyToolsPage(self,tab,g)
+
         def app_starter_page(self,tab):
             self.app_starter=AppStarterPage(self,tab,g,ROOT)
 
@@ -536,15 +541,9 @@ def install(g):
                     elif event[0]=='ai_event':
                         self.handle_ai_event(event[1])
                     elif event[0]=='builder_event':
-                        self.builder_status.config(text=event[1].get('message','Builder browser ready.'))
-                        if event[1].get('type')=='error':
-                            self.builder_failed=True
-                            self.builder_status.pack(fill='x',before=self.builder_frame)
+                        self.handle_site_event('builder',event[1])
                     elif event[0]=='site_event':
-                        self.site_status.config(text=event[1].get('message','Calculator browser ready.'))
-                        if event[1].get('type')=='error':
-                            self.site_failed=True
-                            self.site_status.pack(fill='x',before=self.site_frame)
+                        self.handle_site_event('site',event[1])
                     elif event[0]=='benchmark_cancelled':
                         self.bench_running=False
                         self.bench_result.config(text='Session ended without a saved score. You can start a new test.')
@@ -565,6 +564,31 @@ def install(g):
             try:write_json(ROOT/'benchmarks.json',self.bench_history)
             except OSError as exc:self.log_write(f'Could not save benchmark history: {exc}')
             self.bench_history_label.config(text=f"1280 × 720 • 20 seconds • {result['renderer']}\nLast run: {result['time']}")
+
+        def handle_site_event(self,prefix,data):
+            bridge=getattr(self,prefix+'_bridge')
+            if bridge is None or data.get('_bridge_id',id(bridge))!=id(bridge):return
+            status=getattr(self,prefix+'_status');frame=getattr(self,prefix+'_frame')
+            if 'message' in data:status.config(text=data['message'])
+            kind=data.get('type')
+            if kind=='loaded':
+                status.pack_forget();setattr(self,prefix+'_failed',False);bridge.recoveries=0
+            elif kind in ('loading','retrying','notice','error','stopped'):
+                if not status.winfo_manager():status.pack(fill='x',before=frame)
+                if kind=='error':setattr(self,prefix+'_failed',True)
+            if kind=='stopped' and not getattr(bridge,'recovery_pending',False):
+                bridge.recovery_pending=True
+                def recover():
+                    bridge.recovery_pending=False
+                    if bridge.closed or getattr(self,prefix+'_bridge') is not bridge:return
+                    count=getattr(bridge,'recoveries',0)
+                    if count>=3:
+                        setattr(self,prefix+'_failed',True)
+                        status.config(text='The embedded browser could not recover. Check that WebView2 Runtime is installed.')
+                        return
+                    bridge.recoveries=count+1
+                    bridge.start()
+                self.after(750,recover)
 
         def builder_page(self,tab):
             self.builder_status=tk.Label(tab,text='',bg=BG,fg=MUTED,font=(UI,10),wraplength=800)
@@ -640,7 +664,7 @@ def install(g):
             elif kind=='window_escape':
                 self.chrome.escape()
                 if hasattr(self,'automation'):self.automation.stop()
-                if self.sidebar_fade is not None:self.sidebar_fade.close()
+                if self.sidebar_fade is not None:self.sidebar_fade.finish(self.sidebar_collapsed)
             elif kind=='context_request':
                 self.ai_bridge.send(self.ai_context_message())
             elif kind=='ready':
@@ -680,6 +704,7 @@ def install(g):
 
         def close_embedded_ai(self,event):
             if event.widget is self:
+                if self.sidebar_fade is not None:self.sidebar_fade.close()
                 if hasattr(self,'automation'):self.automation.stop()
                 if self.site_bridge is not None:self.site_bridge.close(wait=True)
                 if self.builder_bridge is not None:self.builder_bridge.close(wait=True)
@@ -699,7 +724,7 @@ def install(g):
                 'The bottleneck tool is a website link. Auto clicker includes timed mouse clicks, single/double clicks, '
                 'left/right/middle buttons, cursor/fixed positions, repeat limits and saved clicker configurations. '
                 'F6 starts or stops clicking by default; it can be changed using Apply hotkey. Esc stops clicking. '
-                'App Starter opens editable Everyday, Gaming, Creator and Full setup packages with logos, app details and selections. AI reviews live source metadata, then Install selected installs or updates those apps inside the hub; download-only mode is also available. '
+                'App Starter contains 100 curated apps with search, category filters, paginated browsing and editable setup packages. Failed downloads/installations expose error codes and redacted log excerpts, optional AI explanations, local fallback guidance and deliberate retry controls. AI suggestions do not execute fixes. AI reviews live source metadata, then Install selected installs or updates those apps inside the hub; download-only mode is also available. '
                 'Drivers shows only CPU/chipset, GPU, motherboard and BIOS support, reads live official vendor sources, uses AI to match '
                 'download links, and caches results for 24 hours. It does not install drivers; unconfirmed releases are labeled. '
                 'The themed top bar supports minimize, maximize and fullscreen. F11 toggles fullscreen; Esc exits it. '

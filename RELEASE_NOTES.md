@@ -1,4 +1,80 @@
-# PerfHub â€” PC Value Checker, 3D Builder & interface improvements
+# Daily Tools
+
+- Added a Daily Tools sidebar tab with six locally processed utilities and no sign-in.
+- Extract editable text from image files or clipboard images using Windows OCR; copy or save TXT.
+- Batch-convert and proportionally resize images into PNG, JPEG, WebP, BMP and ICO.
+- Build PDFs from ordered image lists, with page reorder/remove controls.
+- Clean and transform text, format JSON, encode/decode URL/Base64, and undo changes.
+- Calculate and compare SHA-256 file checksums.
+- Sample original image pixels as HEX/RGB colors.
+- Added opt-in keep-PerfHub-on-top and keep-PC/display-awake controls.
+- Preserve originals and avoid filename collisions for image/PDF exports; run OCR/conversion/PDF/hashing off the UI thread.
+
+Validation: generated-image OCR through the real Windows engine; all five export formats; alpha, orientation and metadata handling; collision-safe files; ordered PDF pages; checksums; text round trips/undo; all six UI dialogs and mocked power/window controls. Existing 100-app scrolling and full-app checks retained.
+
+---
+
+# App library scrolling fix
+
+- Stabilize app-card heights while scrolling instead of sizing cards from temporary clipped child-window measurements.
+- Keep details expanding and collapsing to their natural content height.
+- Coalesce card sizing updates until layout has settled.
+
+Validation: simulated clipped child sizes leave all 100 cards and the scroll range unchanged; repeated top/bottom scroll jumps, last-card details, search, selections and failure-help regression checks passed.
+
+---
+
+# Continuous app library and artwork
+
+- Show all 100 apps on one scrollable page, with search and category filters.
+- Bundle artwork for every app; images are available offline and scaled cleanly from 256px canvases.
+- Reuse app cards when filtering and update details/failure help in place to avoid rebuilding the library.
+- Keep selections across filters and setup packages, and select all matching apps with Select shown apps.
+- Include artwork source metadata and third-party license notices.
+
+Validation: continuous scrolling through the final card, search/categories, cached-card reuse, persistent selections, all 100 images, per-app error help and full app wiring checked without installing any apps.
+
+---
+
+# 100-app library and download failure help
+
+- Expanded App Starter from 13 to 100 curated new-PC apps, with exact WinGet package IDs or the official NVIDIA download source.
+- Added search, categories, 12-card pagination, persistent selections and additional setup bundles. Original bundles remain available.
+- Added complete-installer checks so an empty download is not reported as successful; detect truncated NVIDIA downloads before publisher verification.
+- Capture per-app error codes and bounded, redacted logs while continuing the remaining queue.
+- Added a failed-app picker, Help fix this, optional AI explanations, local fallback guidance and deliberate retry controls.
+- Keep download retries in download mode; AI advice never automatically executes a fix or substitutes download URLs.
+- Bounded bulk AI source-review input and kept WinGet integrity checks and NVIDIA publisher checks in place.
+
+Validation: 99 exact package identifiers checked against current WinGet metadata plus the NVIDIA official installer-link lookup. Simulated failure/success, privacy, AI fallback, pagination, selection persistence, full application navigation and sidebar tests passed. No applications were installed and no real AI requests were used in the regression tests.
+
+---
+
+# Navigation and embedded website fixes
+
+- Changed sidebar animation to slide a fixed-width panel rather than relayout the entire page on each frame.
+- Removed redundant tab remapping, navigation animations, and focus changes on repeated selections.
+- Moved embedded browser startup and command writes off the main UI thread.
+- Website tabs now navigate directly inside the application, avoiding iframe blocking and unnecessary iframe-to-page reloads.
+- Added bounded automatic recovery for connection failures, HTTP errors, soft 404 pages, slow navigation, and native browser process crashes.
+- Keep loaded browser pages and entered form values when changing tabs or toggling the sidebar.
+- Ignore stale status events from closed browser instances.
+- Display browser checks and rate limits without repeated automatic requests. Third-party site access rules still apply.
+
+Validation: local WebView2 recovery fixtures, native process-crash recovery, 60 rapid tab/sidebar changes, non-blocking pipe checks, startup, page wiring, and embedded AI regression checks. Live BuildCores new-build navigation succeeded; PC Builds presented a Cloudflare browser check.
+
+---
+
+# Sidebar update
+
+- The sidebar stays open when you select a tab. It only closes when you use the sidebar toggle or Ctrl+B.
+- Added a quick slide animation for opening and closing the sidebar, replacing the previous fade.
+- Rapid toggles reverse smoothly, and content expands into the available space.
+- Existing pages, inputs, and embedded website layouts are preserved.
+
+---
+
+# PerfHub - PC Value Checker, 3D Builder & interface improvements
 
 Changes since the supplied `PerfHub (1).exe` (the App Packages build).
 

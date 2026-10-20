@@ -3,7 +3,9 @@ import queue,tempfile,threading
 from pathlib import Path
 from unittest.mock import patch,Mock
 from app_starter import APPS,PRESETS,command,Runner,nvidia_url,download_nvidia
-assert len(APPS)==13 and len(PRESETS['Full setup'])==13
+assert len(APPS)==100 and len(PRESETS['Full setup'])==13
+assert len({row[3] for key,row in APPS.items() if key!='nvidia'})==99
+assert all(row[4].startswith('https://') for row in APPS.values())
 for keys in PRESETS.values():assert all(k in APPS for k in keys)
 args=command('winget.exe','chrome','download',Path('test downloads'))
 assert args[:4]==['winget.exe','download','--id','Google.Chrome']
@@ -21,7 +23,9 @@ for bad in ('https://nvidia.com.evil.test/test.exe','http://nvidia.com/test.exe'
 plan_patch=patch('app_sources.latest_plan',return_value={});plan_patch.start()
 with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as tmp:
     events=queue.Queue();runner=Runner(events,tmp)
-    with patch('app_starter.winget_path',return_value='winget.exe'),patch('app_starter.subprocess.Popen',side_effect=[Mock(wait=Mock(return_value=1)),Mock(wait=Mock(return_value=0))]) as launch:
+    def downloaded(*args,**kwargs):
+        path=Path(tmp)/'discord'/'setup.exe';path.parent.mkdir(exist_ok=True);path.write_bytes(b'test-payload');return 0
+    with patch('app_starter.winget_path',return_value='winget.exe'),patch('app_starter.subprocess.Popen',side_effect=[Mock(wait=Mock(return_value=1)),Mock(wait=Mock(side_effect=downloaded))]) as launch:
         runner.work(['chrome','discord'],'download')
         assert launch.call_count==2 and all(c.args[0][1]=='download' for c in launch.call_args_list)
         messages=list(events.queue)
@@ -32,7 +36,7 @@ with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as tmp:
     with patch('app_starter.winget_path',return_value=None),patch('app_starter.subprocess.Popen') as launch:
         runner.stop.clear();runner.work(['chrome'],'download');launch.assert_not_called()
         assert any('WinGet missing' in str(e) for e in list(events.queue))
-print('PASS: all 13 apps, bundles, exact download/install commands, official NVIDIA URL checks, failed-app continuation, stop queue and missing-WinGet fallback. No downloads or installs.')
+print('PASS: all 100 apps, bundles, exact download/install commands, official NVIDIA URL checks, failed-app continuation, stop queue and missing-WinGet fallback. No downloads or installs.')
 
 
 # Direct NVIDIA downloads must pass publisher verification before the final file exists.

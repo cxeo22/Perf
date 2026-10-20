@@ -679,9 +679,12 @@ class Hub(tk.Tk):
 
     # ------------------------------------------------------------ layout
     def _build(self):
-        side = tk.Frame(self, bg=SIDE, width=244)
+        self.sidebar_slot = tk.Frame(self, bg=BG, width=244)
+        self.sidebar_slot.pack(side="left", fill="y")
+        self.sidebar_slot.pack_propagate(False)
+        side = tk.Frame(self.sidebar_slot, bg=SIDE, width=244)
         self.sidebar = side
-        side.pack(side="left", fill="y")
+        side.place(x=0, y=0, width=244, relheight=1)
         side.pack_propagate(False)
         self.sidebar_divider = tk.Frame(self, bg=LINE, width=1)
         self.sidebar_divider.pack(side="left", fill="y")
@@ -724,12 +727,14 @@ class Hub(tk.Tk):
         self.show_tab(0)
 
     def show_tab(self, i):
+        if i == self.cur_tab:return
+        previous = self.cur_tab
         if 0 <= self.cur_tab < len(self.tabs):
             self.tabs[self.cur_tab].pack_forget()
         self.cur_tab = i
         self.tabs[i].pack(fill="both", expand=True, padx=(26, 12), pady=(20, 12))
-        for n, item in enumerate(self.nav):
-            item.set_active(n == i)
+        if 0 <= previous < len(self.nav):self.nav[previous].set_active(False)
+        self.nav[i].set_active(True)
 
     # ------------------------------------------------------------ quick presets (home)
     def _hero_deco(self, c, w, h):

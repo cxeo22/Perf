@@ -1,11 +1,14 @@
-"""Quick, reversible sidebar fade. Covers only the sidebar, never the app."""
+"""Reversible fixed-width sidebar slide; content relayouts only at endpoints."""
 import time
 import tkinter as tk
 
 class SidebarFade:
-    DURATION = .10
+    # Keep the existing class name for callers; transitions now slide, not fade.
+    DURATION = .16
     def __init__(self, root, sidebar, colors, apply_layout):
         self.root, self.sidebar, self.colors, self.apply_layout = root, sidebar, colors, apply_layout
+        self.full_width = int(sidebar.cget('width'))
+        self.width = self.full_width if root.sidebar_slot.winfo_manager() else 0
         self.overlay = None
         self.job = None
         self.closed = False
@@ -19,55 +22,32 @@ class SidebarFade:
     def transition(self, collapsed):
         self.cancel()
         if self.closed:return
-        self.root.update_idletasks()
         if not self.root.winfo_viewable() or self.root.state() == 'iconic':
             self.finish(collapsed)
             return
-        continuing = self.overlay is not None
-        if not collapsed:self.apply_layout(False)
-        self.root.update_idletasks()
-        if not self.sidebar.winfo_ismapped():
-            self.finish(collapsed)
-            return
-        try:
-            if self.overlay is None:
-                self.overlay = tk.Toplevel(self.root)
-                self.overlay.withdraw()
-                self.overlay.overrideredirect(True)
-                self.overlay.transient(self.root)
-                self.overlay.configure(bg=self.colors()['BG'])
-                self.overlay.attributes('-alpha', 0 if collapsed else 1)
-                self.overlay.attributes('-disabled', True)
-            start = float(self.overlay.attributes('-alpha')) if continuing else (0 if collapsed else 1)
-            target = 1 if collapsed else 0
-            began = time.monotonic()
-            def tick():
-                if self.closed:return
-                elapsed = min(1, (time.monotonic() - began) / self.DURATION)
-                eased = elapsed * elapsed * (3 - 2 * elapsed)
-                overlay = self.overlay
-                overlay.configure(bg=self.colors()['BG'])
-                overlay.geometry(f'{self.sidebar.winfo_width()}x{self.sidebar.winfo_height()}+{self.sidebar.winfo_rootx()}+{self.sidebar.winfo_rooty()}')
-                overlay.attributes('-alpha', start + (target - start) * eased)
-                overlay.deiconify();overlay.lift()
-                if elapsed >= 1:self.finish(collapsed)
-                else:self.job = self.root.after(12, tick)
-            tick()
-        except tk.TclError:
-            self.finish(collapsed)
+        start = self.width
+        target = 0 if collapsed else self.full_width
+        if not self.root.sidebar_slot.winfo_manager():
+            self.sidebar.place_configure(x=start-self.full_width)
+            self.apply_layout(False)
+        began = time.monotonic()
+        def tick():
+            if self.closed:return
+            elapsed = min(1, (time.monotonic() - began) / self.DURATION)
+            eased = elapsed * elapsed * (3 - 2 * elapsed)
+            self.width = round(start + (target - start) * eased)
+            self.sidebar.place_configure(x=self.width-self.full_width)
+            if elapsed >= 1:self.finish(collapsed)
+            else:self.job = self.root.after(12, tick)
+        tick()
 
     def finish(self, collapsed):
         self.cancel()
-        self.apply_layout(collapsed)
-        if self.overlay is not None:
-            try:self.overlay.destroy()
-            except tk.TclError:pass
-            self.overlay = None
+        self.width = 0 if collapsed else self.full_width
+        if collapsed:self.apply_layout(True)
+        self.sidebar.place_configure(x=0)
+        if not collapsed:self.apply_layout(False)
 
     def close(self):
         self.closed = True
         self.cancel()
-        if self.overlay is not None:
-            try:self.overlay.destroy()
-            except tk.TclError:pass
-            self.overlay = None
