@@ -24,8 +24,8 @@ for i in range(len(hub.tabs)):
     hub.show_tab(i);hub.update()
 hub._show_info({'cpu':'Test CPU','gpu':'Test GPU','ram':'16'},app.PRESET_ORDER[0],'Test recommendation',[])
 hub.update()
-assert len(hub.tabs)==27
-assert len([n for n in hub.nav if n.winfo_manager()])==20
+assert len(hub.tabs)==28
+assert len([n for n in hub.nav if n.winfo_manager()])==21
 assert hub.nav[24].winfo_manager()=='pack'
 assert hub.nav[25].winfo_manager()=='pack'
 hub.nav[25].command()
@@ -214,4 +214,4 @@ assert 'Test CPU' in context['snapshot'] and 'PRIVATE' not in context['snapshot'
 hub.ai_context_enabled.set(False)
 assert hub.ai_context_message()['snapshot']==''
 hub.destroy()
-print('PASS: 27 pages, idle automation, drivers page, AI draft/theme wiring (mocked), render validation, theme cycling, batch customization, animations and intro. No tuning applied.')
+print('PASS: 28 pages, idle automation, drivers page, AI draft/theme wiring (mocked), render validation, theme cycling, batch customization, animations and intro. No tuning applied.')

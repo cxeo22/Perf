@@ -28,7 +28,7 @@ echo.
 echo Building a single-file Windows executable...
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ai\build.ps1
 if errorlevel 1 exit /b 1
-py -m pip install Pillow --target .build-deps
+py -m pip install Pillow pycaw
 if errorlevel 1 exit /b 1
 "%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:exe /platform:anycpu /out:ai\EmbeddedAI.exe /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Net.Http.dll ai\EmbeddedAI.cs
 if errorlevel 1 exit /b 1

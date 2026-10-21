@@ -10,7 +10,7 @@ def blend(a,b,t):
     return '#%02x%02x%02x'%tuple(round(v+(z-v)*t) for v,z in zip(x,y))
 
 THEMES={
-    'Graphite':('#101214','#14171a','#191d21','#23292f','#30373e','#69b4df'),
+    'Graphite':('#09090b','#101012','#151518','#222226','#303035','#eeeef0'),
     'Midnight':('#0c121b','#101925','#162130','#1e2e40','#2d435a','#71b7ed'),
     'Forest':('#101613','#151e19','#1b2720','#24352b','#344a3c','#7cc6a1'),
     'Ember':('#191310','#211a16','#2a211b','#372b23','#4d3c30','#e0aa72'),
@@ -108,8 +108,9 @@ class Accent(tk.Canvas):
                     for x in range(0,w+12,12):points.extend((x,31+row*9+math.sin(x/85+t+row)*10))
                     self.create_line(*points,fill=p['ACC'] if row==0 else p['LINE'],width=2,smooth=True)
             elif mode=='Particles':
-                for i in range(24):
-                    x=(i*73+t*14)%w;y=12+(i*29)%42+math.sin(t+i)*5
+                count=max(24,min(96,math.ceil(w/72)))
+                for i in range(count):
+                    x=((i+.5)*w/count+t*14)%w;y=12+(i*29)%42+math.sin(t+i)*5
                     self.create_oval(x,y,x+3,y+3,fill=p['ACC'] if i%4==0 else p['LINE'],outline='')
             elif mode=='Grid':
                 for x in range(-64,w+64,32):
@@ -126,14 +127,16 @@ class Accent(tk.Canvas):
                 for i,points in enumerate(strands):
                     if len(points)>=4:self.create_line(*points,fill=p['ACC'] if i==0 else blend(p['PANEL'],p['ACC'],0.4),width=2,smooth=True)
             elif mode=='Constellation':
-                stars=[((i*97+t*(3+i%3))%w,12+(i*19)%40+math.sin(t/2+i)*4) for i in range(18)]
+                count=max(18,min(64,math.ceil(w/85)))
+                stars=[(((i+.5)*w/count+t*(3+i%3))%w,12+(i*19)%40+math.sin(t/2+i)*4) for i in range(count)]
                 for i,(x,y) in enumerate(stars):
                     for xx,yy in stars[i+1:]:
                         if (x-xx)**2+(y-yy)**2<75**2:self.create_line(x,y,xx,yy,fill=p['LINE'])
                     self.create_oval(x-1,y-1,x+2,y+2,fill=blend(p['PANEL'],p['ACC'],0.65),outline='')
             elif mode=='Fireflies':
-                for i in range(18):
-                    x=(i*83+t*7)%w;y=30+math.sin(t/2+i*2)*20
+                count=max(18,min(96,math.ceil(w/83)))
+                for i in range(count):
+                    x=((i+.5)*w/count+t*7)%w;y=30+math.sin(t/2+i*2)*20
                     glow=0.2+0.55*(math.sin(t+i)+1)/2
                     self.create_oval(x-4,y-4,x+4,y+4,fill=blend(p['PANEL'],p['ACC'],glow*0.15),outline='')
                     self.create_oval(x-1,y-1,x+1,y+1,fill=blend(p['PANEL'],p['ACC'],glow),outline='')
@@ -151,7 +154,7 @@ class Accent(tk.Canvas):
         self.delete('all');self.tick()
 
 class Intro:
-    """Opaque startup cover, wordmark fade-in, then reveal the ready app."""
+    """Monochrome feather with orbiting lights, then reveal the ready app."""
     def __init__(self,root,colors):
         self.root=root;self.colors=colors;self.frame=0;self.job=None;self.closed=False
         self.window=tk.Toplevel(root)
@@ -167,9 +170,17 @@ class Intro:
         families=set(tkfont.families(root))
         face=next((f for f in ('Segoe UI Variable Display','Bahnschrift','Segoe UI') if f in families),'Segoe UI')
         self.feather_frames=[feather(self.window,96,i) for i in range(21)]
+        self.center=(width/2,height/2-98)
+        cx,cy=self.center
+        self.rings=[]
+        for rx,ry in ((78,46),(64,76)):
+            self.rings.append(self.canvas.create_oval(cx-rx,cy-ry,cx+rx,cy+ry,outline=colors['BG']))
+        self.sparks=[self.canvas.create_oval(0,0,0,0,fill=colors['BG'],outline='') for _ in range(6)]
         self.feather=self.canvas.create_image(width/2,height/2-98,image=self.feather_frames[0])
         self.word=self.canvas.create_text(width/2,height/2-5,text='PerfHub',font=(face,46,'bold'),fill=colors['BG'])
         self.subtitle=self.canvas.create_text(width/2,height/2+52,text='YOUR PERFORMANCE WORKSPACE',font=('Segoe UI',10),fill=colors['BG'])
+        self.track=self.canvas.create_line(cx-40,height/2+90,cx+40,height/2+90,fill=colors['BG'],width=2)
+        self.progress=self.canvas.create_line(cx-40,height/2+90,cx-40,height/2+90,fill=colors['BG'],width=2)
         self.window.bind('<Escape>',lambda e:self.finish())
         self.window.bind('<Button-1>',lambda e:self.finish())
         self.window.bind('<Destroy>',self.destroyed,add='+')
@@ -198,6 +209,21 @@ class Intro:
         self.canvas.itemconfigure(self.feather,image=self.feather_frames[round(fade*20)])
         self.canvas.itemconfigure(self.word,fill=blend(self.colors['BG'],'#edf1f4',fade))
         self.canvas.itemconfigure(self.subtitle,fill=blend(self.colors['BG'],self.colors['ACC'],fade*0.8))
+        cx,cy=self.center
+        self.canvas.coords(self.feather,cx,cy-4*math.sin(self.frame/12))
+        for ring in self.rings:self.canvas.itemconfigure(ring,outline=blend(self.colors['BG'],'#ffffff',fade*.10))
+        # Two lights follow offset elliptical paths, each with a short fading trail.
+        for i,item in enumerate(self.sparks):
+            orbit,trail=divmod(i,3)
+            angle=self.frame*.065+orbit*math.pi-trail*.12
+            rx,ry=((78,46),(64,76))[orbit]
+            x,y=cx+rx*math.cos(angle),cy+ry*math.sin(angle)
+            radius=2.3 if trail==0 else 1.4
+            self.canvas.coords(item,x-radius,y-radius,x+radius,y+radius)
+            self.canvas.itemconfigure(item,fill=blend(self.colors['BG'],'#f5f5f6',fade*(.9 if trail==0 else .28/trail)))
+        self.canvas.itemconfigure(self.track,fill=blend(self.colors['BG'],'#333338',fade))
+        self.canvas.itemconfigure(self.progress,fill=blend(self.colors['BG'],'#eeeef0',fade))
+        self.canvas.coords(self.progress,cx-40,cy+188,cx-40+80*min(1,self.frame/85),cy+188)
         if self.frame==85:
             self.root.deiconify();self.window.lift()
         if self.frame>=85:

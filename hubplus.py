@@ -19,6 +19,8 @@ from automation import AutomationPage
 from drivers import DriversPage
 from app_starter import AppStarterPage
 from daily_tools import DailyToolsPage
+from audio_panel import AudioPanel
+from storage_explorer import StorageExplorer
 from pc_value import PCValuePage
 from branding import window_icon
 from window_chrome import WindowChrome
@@ -44,9 +46,9 @@ def install(g):
     Card, Button, Nav = g['Card'], g['RButton'], g['NavItem']
     BG, SIDE, PANEL, FG, MUTED, ACC, GREEN = (g[k] for k in ('BG','SIDE','PANEL','FG','MUTED','ACC','GREEN'))
     UI = g['UI']
-    Button.KINDS['primary'].update(fill=ACC,hfill='#93c8e5',edge=ACC,hedge='#b3d9ed',fg='#101820',hfg='#101820')
-    Button.KINDS['default'].update(hfill='#303a43')
-    Button.KINDS['ghost'].update(hfill='#252d34')
+    Button.KINDS['primary'].update(fill=ACC,hfill='#ffffff',edge=ACC,hedge='#ffffff',fg='#141416',hfg='#141416')
+    Button.KINDS['default'].update(hfill='#303035')
+    Button.KINDS['ghost'].update(hfill='#242428')
 
     class Hub(Base):
         def __init__(self,show_intro=True,enable_ai=True,enable_web=None):
@@ -115,7 +117,7 @@ def install(g):
                       ('Presets',self.presets_page),('Tools',self.tools_overview),
                       ('Windows tweaks',self.windows_page),('Appearance',self.appearance_page),
                       ('Bottleneck calculator',self.bottleneck_page),('AI',self.ai_page),
-                      ('Auto clicker',self.automation_page),('Drivers',self.drivers_page),('App Starter',self.app_starter_page),('PC Value Checker',self.pc_value_page),('3D PC Builder',self.builder_page),('Daily Tools',self.daily_tools_page)]
+                      ('Auto clicker',self.automation_page),('Drivers',self.drivers_page),('App Starter',self.app_starter_page),('PC Value Checker',self.pc_value_page),('3D PC Builder',self.builder_page),('Daily Tools',self.daily_tools_page),('Audio Mixer',self.audio_page)]
             for name, build in extras:
                 tab = tk.Frame(self.content, bg=BG)
                 self.tabs.append(tab)
@@ -126,7 +128,7 @@ def install(g):
                 if self.nav[i] is None:
                     self.nav[i]=Nav(side,'','',lambda:None,height=28)
             groups=[('TUNE',[('Home',0),('Presets',15),('Individual tweaks',1),('Game profiles',3),('Benchmark',8),('Bottleneck tester',19),('3D PC Builder',25),('AI assistant',20)]),
-                    ('WINDOWS',[('Windows tweaks',17),('Storage',9),('Drivers',22),('App Starter',23),('PC Value Checker',24)]),
+                    ('WINDOWS',[('Windows tweaks',17),('Storage',9),('Drivers',22),('App Starter',23),('PC Value Checker',24),('Audio Mixer',27)]),
                     ('MANAGE',[('Daily Tools',26),('Tools',16),('Auto clicker',21),('Backups & fixes',11),('Appearance',18),('Help',6),('Activity',7)])]
             for title,links in groups:
                 tk.Label(side,text=title,bg=SIDE,fg=MUTED,font=(UI,8)).pack(anchor='w',padx=22,pady=(9,3))
@@ -291,15 +293,15 @@ def install(g):
             self.metric_label.config(text=f'{metric} • {samples[-1]:.0f}%' if samples else f'{metric} • Collecting samples…')
             for percent in (0,25,50,75,100):
                 y=15+(100-percent)*1.4
-                cv.create_line(38,y,w-12,y,fill='#30373e',dash=(3,5))
+                cv.create_line(38,y,w-12,y,fill=g['LINE'],dash=(3,5))
                 cv.create_text(28,y,text=f'{percent}%',fill=MUTED,anchor='e',font=(UI,8))
             cv.create_text(40,178,text='60 seconds',fill=MUTED,anchor='w',font=(UI,8))
             cv.create_text(w-12,178,text='Now',fill=MUTED,anchor='e',font=(UI,8))
             if len(samples)>1:
                 coords=[]
                 for i,v in enumerate(samples):coords.extend((40+(w-54)*(60-len(samples)+i)/59,155-v*1.4))
-                cv.create_polygon([coords[0],155]+coords+[coords[-2],155],fill='#20313c',outline='')
-                cv.create_line(*coords,fill='#355c73',width=5,smooth=True)
+                cv.create_polygon([coords[0],155]+coords+[coords[-2],155],fill=g['PANEL2'],outline='')
+                cv.create_line(*coords,fill=g['LINE'],width=5,smooth=True)
                 cv.create_line(*coords,fill=ACC,width=2,smooth=True)
                 x,y=coords[-2:];cv.create_oval(x-4,y-4,x+4,y+4,fill='#ffffff',outline=ACC,width=2)
 
@@ -372,6 +374,9 @@ def install(g):
 
         def daily_tools_page(self,tab):
             self.daily_tools=DailyToolsPage(self,tab,g)
+
+        def audio_page(self,tab):
+            self.audio_panel=AudioPanel(self,tab,g)
 
         def app_starter_page(self,tab):
             self.app_starter=AppStarterPage(self,tab,g,ROOT)
@@ -760,15 +765,7 @@ def install(g):
             self.insert_ai_draft(text)
 
         def disk_page(self,tab):
-            b=self.page(tab,'Storage','Cleanup, drive optimization and storage settings in one place. Choose a tool below.')
-            import shutil
-            total,used,free=shutil.disk_usage(Path.home().anchor)
-            self.label(b,f'System drive  •  {free//(2**30)} GB free / {total//(2**30)} GB total',18)
-            for title,desc,exe in [('Storage settings','Inspect temporary files and installed apps.','ms-settings:storagesense'),
-                                   ('Disk Cleanup','Choose exactly which file groups Windows removes.','cleanmgr.exe'),
-                                   ('Optimize drives','Let Windows choose SSD trim or HDD defragmentation.','dfrgui.exe')]:
-                self.action(self.box(b,title,desc),'Open '+title.lower(),lambda e=exe:self.launch(e))
-            self.action(self.box(b,'File system scan','Read-only online disk scan; no automatic repair.'),'Scan system drive',lambda:self.task('Disk scan','chkdsk $env:SystemDrive'))
+            self.storage_explorer=StorageExplorer(self,tab,g)
 
         def category_page(self,tab,terms):
             b=self.page(tab,'Customize','Review Windows appearance, privacy and security options. Changes use the existing execution and undo engine.')

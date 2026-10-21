@@ -8,6 +8,15 @@
 
 ---
 
+## New in v1.4
+
+- **Audio Mixer:** app volume and mute, speaker and microphone controls, preferred playback/call devices, and a synchronized pop-out with Always on top.
+- **Storage Explorer:** drive usage, folder browsing, sortable file details, filtering, Windows file icons, and background folder reads.
+- **Refreshed appearance:** charcoal and white Graphite theme, monochrome feather branding, rounder controls, and an animated startup screen.
+- **Fixes:** smoother audio sliders, full-width particle animations, and corrected image-library packaging.
+
+[Download PerfHub v1.4](https://github.com/cxeo22/Perf/releases/tag/v1.4) · [Changes since v1.3](https://github.com/cxeo22/Perf/releases/tag/v1.4)
+
 ## Easy install guide
 
 **You only need the PerfHub EXE. You do not need Python, source code, or developer tools.**
@@ -124,7 +133,7 @@ Run this from the source folder, or double-click the file:
 build_exe.bat
 ```
 
-The script installs PyInstaller and Pillow, compiles GeminiChat and the other C# helpers, and packages:
+The script installs PyInstaller, Pillow, and pycaw, compiles GeminiChat and the other C# helpers, and packages:
 
 ```text
 dist/PerfHub.exe
@@ -135,7 +144,7 @@ The packaged application requests administrator privileges when launched. The de
 ### Run from Python
 
 ```bat
-py -m pip install Pillow
+py -m pip install Pillow pycaw
 py perfhub.py
 ```
 

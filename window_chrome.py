@@ -75,8 +75,7 @@ class WindowChrome(tk.Canvas):
             if not self.winfo_exists():return
         except tk.TclError:return
         g=self.g;w=max(300,self.winfo_width());self.configure(bg=g['BG']);self.delete('all')
-        self.create_polygon(g['rr'](7,5,w-7,46,10),smooth=True,fill=g['SIDE'],outline=blend(g['ACC'],g['BG'],.55),width=1)
-        self.create_line(21,46,w-21,46,fill=blend(g['ACC'],g['BG'],.22),width=2)
+        self.create_polygon(g['rr'](7,5,w-7,46,21),smooth=True,fill=g['SIDE'],outline=blend(g['SIDE'],g['LINE'],.38),width=1)
         # Small feather emblem, matching PerfHub's loading screen.
         if not hasattr(self,'_feather'):self._feather=feather(self,32)
         menu=callable(getattr(self.root,'toggle_sidebar',None))
@@ -88,12 +87,12 @@ class WindowChrome(tk.Canvas):
         self.buttons={name:(left,10,right,40) for name,left,right in positions}
         if menu:self.buttons['menu']=(14,8,164,42)
         for name,(left,top,right,bottom) in self.buttons.items():
-            if self.hover==name:self.create_polygon(g['rr'](left,top,right,bottom,7),smooth=True,fill=g['PANEL2'],outline='')
+            if self.hover==name and name!='menu':self.create_oval(left+3,top,right-3,bottom,fill=g['PANEL2'],outline='')
             x=(left+right)/2;y=25;color=g['ACC']
             if name=='menu':
-                self.create_polygon(g['rr'](left,top,right,bottom,8),smooth=True,fill=g['PANEL2'],outline=blend(g['ACC'],g['PANEL2'],.65),width=1)
-                self.create_rectangle(23,16,43,34,outline=color,width=1.5)
-                self.create_line(29,16,29,34,fill=color,width=1.5)
+                self.create_polygon(g['rr'](left,top,right,bottom,17),smooth=True,fill=g['PANEL2'] if self.hover==name else g['PANEL'],outline=blend(g['PANEL'],g['LINE'],.45),width=1)
+                self.create_polygon(g['rr'](25,17,42,33,4),smooth=True,fill='',outline=color,width=1.3)
+                self.create_line(30,18,30,32,fill=color,width=1.3)
                 collapsed=getattr(self.root,'sidebar_collapsed',False)
                 points=(34,22,38,25,34,28) if collapsed else (38,22,34,25,38,28)
                 self.create_line(*points,fill=color,width=1.5)

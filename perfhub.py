@@ -15,11 +15,11 @@ from perfdata import *
 from branding import feather
 
 # ------------------------------------------------------------------ theme
-BG, SIDE, PANEL, PANEL2, LINE = "#101214", "#14171a", "#191d21", "#23292f", "#30373e"
-FG, MUTED, DIM = "#edf1f4", "#a0aab4", "#717c87"
-ACC, ACC_D, ACC2, GREEN, RED = "#69b4df", "#101820", "#88a8bb", "#69c59b", "#e07e81"
-HERO, HERO2, HERO_EDGE = "#1b252d", "#1a2329", "#354855"
-NAV_ACTIVE, NAV_HOVER, EDGE_HOVER = "#253540", "#21282e", "#496171"
+BG, SIDE, PANEL, PANEL2, LINE = "#09090b", "#101012", "#151518", "#222226", "#303035"
+FG, MUTED, DIM = "#f5f5f6", "#aaaab0", "#77777f"
+ACC, ACC_D, ACC2, GREEN, RED = "#eeeef0", "#141416", "#b8b8c0", "#69c59b", "#e07e81"
+HERO, HERO2, HERO_EDGE = "#1c1c20", "#18181c", "#37373e"
+NAV_ACTIVE, NAV_HOVER, EDGE_HOVER = "#26262c", "#1c1c21", "#55555e"
 RISKCOL = {"Safe": "#3ddc84", "Medium": "#ffb020", "Advanced": "#ff5c5c"}
 UI = "Segoe UI"
 
@@ -38,11 +38,15 @@ def mix(c1, c2, t):
 
 
 def rr(x1, y1, x2, y2, r):
-    """Polygon points for a rounded rectangle (draw with smooth=True)."""
+    """Sample circular corners so pills stay round at every widget size."""
     r = max(1, min(r, (x2 - x1) / 2, (y2 - y1) / 2))
-    return [x1 + r, y1, x1 + r, y1, x2 - r, y1, x2 - r, y1, x2, y1, x2, y1 + r, x2, y1 + r, x2, y2 - r, x2, y2 - r,
-            x2, y2, x2 - r, y2, x2 - r, y2, x1 + r, y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y2 - r, x1, y1 + r,
-            x1, y1 + r, x1, y1]
+    points = []
+    for cx, cy, start in ((x2-r, y1+r, -90), (x2-r, y2-r, 0),
+                          (x1+r, y2-r, 90), (x1+r, y1+r, 180)):
+        for step in range(9):
+            angle = math.radians(start + step * 90 / 8)
+            points.extend((cx + r * math.cos(angle), cy + r * math.sin(angle)))
+    return points
 
 
 _fonts = {}
@@ -101,7 +105,7 @@ class Card(tk.Canvas):
         for lbl, margin in self._wraps:
             wl = max(100, e.width - 2 * self.inset - self.margin_right - margin)
             try:
-                if int(lbl.cget("wraplength")) != wl:
+                if int(str(lbl.cget("wraplength"))) != wl:
                     lbl.configure(wraplength=wl)
             except tk.TclError:
                 pass
@@ -149,13 +153,13 @@ class Card(tk.Canvas):
 class RButton(tk.Canvas):
     """Rounded button with a smooth hover fade."""
     KINDS = {
-        "primary": dict(fill=ACC, hfill="#62cbff", edge=ACC, hedge="#9be0ff", fg=ACC_D, hfg=ACC_D),
-        "default": dict(fill=PANEL2, hfill="#1e2750", edge=LINE, hedge=ACC, fg=FG, hfg="#ffffff"),
-        "ghost": dict(fill=None, hfill="#161d3d", edge=LINE, hedge=EDGE_HOVER, fg=MUTED, hfg=FG),
-        "hero": dict(fill="#0e2a4d", hfill="#15406f", edge=ACC, hedge="#8fdcff", fg=FG, hfg="#ffffff"),
+        "primary": dict(fill=ACC, hfill="#ffffff", edge=ACC, hedge="#ffffff", fg=ACC_D, hfg=ACC_D),
+        "default": dict(fill=PANEL2, hfill="#303035", edge=LINE, hedge=ACC, fg=FG, hfg="#ffffff"),
+        "ghost": dict(fill=None, hfill="#242428", edge=LINE, hedge=EDGE_HOVER, fg=MUTED, hfg=FG),
+        "hero": dict(fill="#202024", hfill="#303035", edge=ACC, hedge="#ffffff", fg=FG, hfg="#ffffff"),
     }
 
-    def __init__(self, parent, text, command=None, kind="default", width=None, height=34, radius=11,
+    def __init__(self, parent, text, command=None, kind="default", width=None, height=34, radius=17,
                  font=(UI, 10, "bold"), outer=None):
         outer = outer or _bg_of(parent)
         w = width or (text_w(font, text) + 36)
@@ -280,15 +284,15 @@ class NavItem(tk.Canvas):
     def _draw(self):
         h, a, w, ht = self.hv, self.ac, self.nw, self.nh
         bg = mix(mix(SIDE, NAV_HOVER, h), NAV_ACTIVE, a)
-        edge = mix(mix(SIDE, EDGE_HOVER, h), GREEN, a)
+        edge = mix(mix(SIDE, EDGE_HOVER, h), ACC, a)
         self.delete("all")
-        self.create_polygon(rr(1, 1, w - 1, ht - 1, 13), smooth=True, fill=bg, outline=edge)
+        self.create_polygon(rr(1, 1, w - 1, ht - 1, (ht-2)/2), smooth=True, fill=bg, outline=edge)
         m = max(h, a)
         if m > 0.03:
             bh = 8 + 16 * m
-            self.create_rectangle(9, ht / 2 - bh / 2, 12, ht / 2 + bh / 2, fill=mix(ACC, GREEN, a), outline="")
+            self.create_rectangle(9, ht / 2 - bh / 2, 12, ht / 2 + bh / 2, fill=ACC, outline="")
         ix, iy, isz, tx = 32, ht / 2, 12, 54
-        icol = mix(mix(ACC2, ACC, h), GREEN, a)
+        icol = mix(ACC2, ACC, max(h,a))
         if self.style == "slide":
             tx += 7 * h
             ix += 3 * h
@@ -1583,6 +1587,26 @@ def headless(argv):
 if __name__ == "__main__":
     from hubplus import install
     install(globals())
+    if '--verify-startup' in sys.argv:
+        # Exercise the packaged native image modules without tuning or elevation.
+        from PIL import Image, ImageTk
+        from audio_panel import WindowsAudio
+        WindowsAudio()
+        import io
+        probe = tk.Tk()
+        probe.withdraw()
+        try:
+            data = io.BytesIO()
+            Image.new('RGBA', (4, 4), 'white').save(data, format='PNG')
+            data.seek(0)
+            loaded = Image.open(data)
+            loaded.load()
+            photo = ImageTk.PhotoImage(loaded, master=probe)
+            assert photo.width() == 4
+            assert feather(probe, 48).width() == 48
+        finally:
+            probe.destroy()
+        sys.exit(0)
     ensure_admin()
     if "--preset" in sys.argv or "--list" in sys.argv:
         headless(sys.argv)

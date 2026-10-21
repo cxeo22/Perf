@@ -1,3 +1,44 @@
+PerfHub v1.4 — Audio Mixer, Storage Explorer & Monochrome Refresh
+
+### What's new since v1.3
+
+- Added **Audio Mixer** with per-application audio-session volume and mute controls across connected output devices.
+- Added speaker and microphone volume/mute controls, device selection, and separate preferred devices for playback and calls.
+- Added a resizable **pop-out mixer** with an optional **Always on top** setting. It stays synchronized with the mixer inside PerfHub.
+- Added **Storage Explorer** with drive capacity, used/free space, file system, and utilization details.
+- Added folder browsing, a path bar, Back/Up/Home navigation, file-name filtering, sortable file details, Copy path, and Show in File Explorer.
+- Added Windows folder and file-type icons to Storage Explorer. Folder reads run in the background, and large listings load in batches.
+- Refreshed the default Graphite theme with darker charcoal surfaces, white accents, a monochrome feather logo, rounded buttons, and a cleaner pill-shaped top bar.
+- Updated the startup animation with a floating feather, orbiting lights, and a progress line.
+
+### Fixes and improvements
+
+- Replaced the buggy audio slider notch with a round thumb, reliable dragging, click-to-seek, and keyboard controls.
+- Prevented audio refreshes from changing volume settings automatically or interrupting a drag.
+- Made particle, firefly, and constellation animations fill the full panel width and adapt when resized.
+- Fixed the packaged Pillow image-library mismatch that could prevent the program from starting.
+- Preserved the existing tuning tools, Daily Tools, 100-app library, AI tools, and sidebar navigation.
+
+### Getting Started
+
+Close any older copy of PerfHub, then download and launch **PerfHub-v1.4.exe** below. No Python installation is needed.
+
+Open **Audio Mixer** in the sidebar for volume/device controls, or **Storage** for the new explorer.
+
+### Notes
+
+- Volume, mute, and preferred-device changes apply immediately in Windows. Closing the mixer keeps the settings you selected.
+- Apps appear in the mixer after creating an audio session. Windows sound settings remain available for additional driver-specific options.
+- Storage browsing does not delete or modify files. Folder sizes are shown as a dash; file sizes appear in the listing.
+- AI features and online downloads require an internet connection. Daily Tools continue processing files locally.
+- Matching source files and artwork are included in **PerfHub-v1.4-source.zip**.
+
+### Validation
+
+Validated drive and audio-device/session discovery; storage browsing, filtering, sorting and scan cancellation; slider dragging and keyboard controls; mixer pop-out synchronization and refresh behavior; and packaged executable startup. The full 28-page application checks passed during this update. Audio write operations were tested with a fake backend to preserve the development PC's current audio settings.
+
+---
+
 # Daily Tools
 
 - Added a Daily Tools sidebar tab with six locally processed utilities and no sign-in.

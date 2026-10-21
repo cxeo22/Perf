@@ -3,10 +3,10 @@
 
 a = Analysis(
     ['perfhub.py'],
-    pathex=['.build-deps'],
+    pathex=['../audio-deps'],
     binaries=[],
     datas=[('assets', 'assets'), ('renderbench.html', '.'), ('ai/GeminiChat.exe', 'ai'), ('ai/EmbeddedAI.exe', 'ai'), ('ai/EmbeddedAI.exe.config', 'ai'), ('ai/DriverAI.exe', 'ai'), ('ai/ValueAI.exe', 'ai'), ('ai/ValueAI.exe.config', 'ai'), ('ai/EmbeddedSite.exe','ai'), ('ai/Microsoft.Web.WebView2.Core.dll','ai'), ('ai/Microsoft.Web.WebView2.WinForms.dll','ai'), ('ai/WebView2Loader.dll','ai'), ('ai/WebView2-LICENSE.txt','ai'), ('ai/WebView2-NOTICE.txt','ai')],
-    hiddenimports=['perfdata', 'hubplus'],
+    hiddenimports=['perfdata', 'hubplus', 'PIL._imaging', 'PIL._imagingtk', 'pycaw.utils', 'comtypes.stream', 'comtypes.persist'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -36,5 +36,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    uac_admin=True,
+    uac_admin=False,
 )
