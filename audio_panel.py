@@ -1,4 +1,9 @@
-"""Local Windows Core Audio mixer and synchronized detachable Tk views."""
+"""Local Windows Core Audio mixer and synchronized detachable Tk views.
+
+RETWEAKS addition (combined app): volume lock for the default speaker and default microphone
+(core/audio_lock.py; settings audio_lock_output / audio_lock_input, None = off). It is checked every
+0.5 s while RETWEAKS runs, even with this page hidden, follows whichever device is the default and
+never touches mute."""
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -60,10 +65,25 @@ class WindowsAudio:
         self.api.SetDefaultDevice(device_id,roles=roles)
 
 
+class LockIO:
+    """Reads/writes the DEFAULT speaker or microphone level for the volume lock (RETWEAKS core/audio)."""
+    def __init__(self):
+        from core.audio import AudioBackend
+        self.backend=AudioBackend()
+    def read(self,kind):
+        return self.backend.master_state() if kind=='output' else self.backend.input_state()
+    def write(self,kind,percent):
+        if kind=='output':self.backend.set_master_volume(percent)
+        else:self.backend.set_input_volume(percent)
+
+
 class AudioPanel:
-    def __init__(self,hub,tab,g,backend=None):
+    def __init__(self,hub,tab,g,backend=None,lock_io=None):
         self.hub=hub;self.tab=tab;self.g=g;self.backend=backend;self.views=[]
         self.window=None;self.closed=False;self.job=None;self.state=None
+        self.lock_io=lock_io;self.lock_job=None;self.volume_lock=None;self.lock_error=''
+        from core import audio_lock
+        self.audio_lock=audio_lock
         body=hub.page(tab,'Audio Mixer','Control app volumes, speakers and microphones. Pop the mixer out to keep it beside your other apps.')
         bar=tk.Frame(body,bg=g['BG']);bar.pack(fill='x',padx=16,pady=8)
         g['RButton'](bar,'Pop out mixer',self.pop_out,kind='primary').pack(side='left',padx=(0,10))
@@ -71,6 +91,41 @@ class AudioPanel:
         self.add_view(body)
         hub.bind('<Destroy>',self.destroy,add='+')
         self.job=hub.after(400,self.tick)
+        self.lock_job=hub.after(self.audio_lock.INTERVAL_MS,self.lock_tick)
+
+    # ---- volume lock (RETWEAKS)
+    def lock_value(self,kind):
+        settings=getattr(self.hub,'settings',None) or {}
+        return self.audio_lock.clean_lock(settings.get(self.audio_lock.KEYS[kind]))
+
+    def set_lock(self,kind,percent):
+        """percent None turns the lock off. Saved in RETWEAKS settings right away."""
+        settings=getattr(self.hub,'settings',None)
+        if settings is None:return
+        settings[self.audio_lock.KEYS[kind]]=self.audio_lock.clean_lock(percent)
+        if hasattr(self.hub,'save_settings'):self.hub.save_settings()
+        what=('Lock ' if percent is not None else 'Unlock ')+('microphone' if kind=='input' else 'speaker')+' volume'
+        if hasattr(self.hub,'log_action'):
+            self.hub.log_action('Volume lock',what,f'{percent}%' if percent is not None else 'Off')
+        for view in self.views:
+            for row in view['rows'].values():
+                if row.get('lock_kind')==kind:
+                    row['updating']=True;row['lock'].set(percent is not None);row['updating']=False
+
+    def lock_tick(self):
+        self.lock_job=None
+        if self.closed:return
+        if any(self.lock_value(k) is not None for k in self.audio_lock.KEYS):
+            try:
+                if self.lock_io is None:self.lock_io=LockIO()
+                if self.volume_lock is None:
+                    self.volume_lock=self.audio_lock.VolumeLock(
+                        read=lambda k:self.lock_io.read(k),write=lambda k,p:self.lock_io.write(k,p),
+                        get_lock=lambda k:self.lock_value(k),log=getattr(self.hub,'log_action',None))
+                self.volume_lock.tick();self.lock_error=''
+            except Exception as exc:
+                self.lock_error=f'Volume lock is unavailable: {exc}'
+        self.lock_job=self.hub.after(self.audio_lock.INTERVAL_MS,self.lock_tick)
 
     def add_view(self,parent):
         g=self.g
@@ -84,7 +139,7 @@ class AudioPanel:
     def pop_out(self):
         if self.window and self.window.winfo_exists():self.window.deiconify();self.window.lift();return
         g=self.g;win=tk.Toplevel(self.hub);self.window=win
-        win.title('PerfHub — Audio Mixer');win.geometry('740x760');win.minsize(540,440);win.configure(bg=g['BG'])
+        win.title('RETWEAKS — Audio Mixer');win.geometry('740x760');win.minsize(540,440);win.configure(bg=g['BG'])
         from branding import window_icon
         window_icon(win)
         top=tk.Frame(win,bg=g['BG']);top.pack(fill='x',padx=20,pady=14)
@@ -101,11 +156,25 @@ class AudioPanel:
     def action(self,fn):
         try:fn()
         except Exception as exc:
-            for view in self.views:view['status'].configure(text=f'Windows could not apply this change: {exc}')
+            for view in self._live_views():view['status'].configure(text=f'Windows could not apply this change: {exc}')
             return
         self.refresh()
 
+    def _live_views(self):
+        """Drops views whose window is gone (e.g. the pop-out destroyed without its close button),
+        so one dead view can't stop the mixer from updating."""
+        def alive(v):
+            try:return bool(v['status'].winfo_exists())
+            except tk.TclError:return False
+        self.views=[v for v in self.views if alive(v)]
+        if self.window is not None:
+            try:
+                if not self.window.winfo_exists():self.window=None
+            except tk.TclError:self.window=None
+        return self.views
+
     def refresh(self):
+        self._live_views()
         try:
             if self.backend is None:self.backend=WindowsAudio()
             self.state=self.backend.snapshot()
@@ -116,8 +185,13 @@ class AudioPanel:
     def tick(self):
         self.job=None
         if self.closed:return
-        if self.tab.winfo_viewable() or (self.window and self.window.winfo_viewable()):self.refresh()
-        self.job=self.hub.after(1500,self.tick)
+        try:
+            self._live_views()
+            if self.tab.winfo_viewable() or (self.window and self.window.winfo_viewable()):self.refresh()
+        except tk.TclError:
+            pass
+        finally:
+            if not self.closed:self.job=self.hub.after(1500,self.tick)
 
     def render(self,view,state):
         g=self.g;items=state['devices']+state['sessions']
@@ -134,14 +208,14 @@ class AudioPanel:
                     if selected is None:selected=next((d for d in devices if d['default']),devices[0])
                     view['selected'][flow]=selected['id']
                     names=[f"{i+1}. {d['name']}"+(' • Default' if d['default'] else '') for i,d in enumerate(devices)]
-                    picker=ttk.Combobox(view['content'],values=names,state='readonly',style='PerfHub.TCombobox',font=(g['UI'],10))
-                    picker.pack(fill='x',pady=(0,5));picker.current(devices.index(selected))
-                    def choose(event,flow=flow,devices=devices,picker=picker):
-                        index=picker.current()
-                        if index<0:return
+                    picker=g['RSelect'](view['content'],names,width=520)       # base app v1.5: rounded picker
+                    picker.pack(anchor='w',pady=(0,8));picker.current(devices.index(selected))
+                    def choose(value,flow=flow,devices=devices,names=names):
+                        if value not in names:return
+                        index=names.index(value)
                         view['selected'][flow]=devices[index]['id'];view['signature']=None
                         self.render(view,self.state)
-                    picker.bind('<<ComboboxSelected>>',choose)
+                    picker.command=choose
                     self.row(view,selected,True)
                 if not devices:self.note(view['content'],'No connected devices found.')
             self.heading(view['content'],'Application volumes')
@@ -154,8 +228,10 @@ class AudioPanel:
                 row['updating']=True
                 row['value'].set(round(item['level']))
                 row['percent'].configure(text=f"{round(item['level'])}%")
-                row['mute'].set(item['mute']);row['updating']=False
-        view['status'].configure(text=('Some devices could not be read. Reconnect them or open Windows sound settings.' if state['errors'] else 'Live Windows audio • Changes apply immediately'))
+                row['mute'].set(item['mute'])
+                if row.get('lock_kind'):row['lock'].set(self.lock_value(row['lock_kind']) is not None)
+                row['updating']=False
+        view['status'].configure(text=self.lock_error or ('Some devices could not be read. Reconnect them or open Windows sound settings.' if state['errors'] else 'Live Windows audio • Changes apply immediately'))
 
     def heading(self,parent,text):
         tk.Label(parent,text=text,bg=self.g['BG'],fg=self.g['FG'],font=(self.g['UI'],15,'bold'),anchor='w').pack(fill='x',pady=(14,8))
@@ -176,13 +252,29 @@ class AudioPanel:
         row=dict(value=tk.DoubleVar(value=item['level']),mute=tk.BooleanVar(value=item['mute']),dragging=False,updating=True)
         view['rows'][key]=row
         percent=tk.Label(controls,width=5,text=f"{round(item['level'])}%",bg=g['PANEL'],fg=g['FG']);percent.pack(side='right');row['percent']=percent
+        kind=('output','input')[item['flow']] if device and item.get('default') else None
         def level(value):
             percent.configure(text=f'{round(float(value))}%')
             self.action_level(key,value,view)
+            # Moving a locked default device's slider in RETWEAKS moves the lock with it.
+            if kind and self.lock_value(kind) is not None:self.set_lock(kind,round(float(value)))
         slider=VolumeSlider(controls,row['value'],g,level,on_drag=lambda active:row.update(dragging=active))
         row['slider']=slider
         slider.pack(side='left',fill='x',expand=True,padx=(0,14))
         g['RCheck'](controls,'Mute',row['mute'],command=lambda:self.action(lambda:self.backend.set_mute(key,row['mute'].get()))).pack(side='left')
+        if kind:
+            # Volume lock: holds the DEFAULT device at this %; RETWEAKS puts it back within half a second.
+            row['lock_kind']=kind;row['lock']=tk.BooleanVar(value=self.lock_value(kind) is not None)
+            def toggle_lock(kind=kind,row=row):
+                if row['updating']:return
+                self.set_lock(kind,round(row['value'].get()) if row['lock'].get() else None)
+            g['RCheck'](controls,'Lock',row['lock'],command=toggle_lock).pack(side='left',padx=(10,0))
+        if kind:
+            note=tk.Label(card.body,text=('Lock keeps the default '+('speaker' if kind=='output' else 'microphone')+
+                ' volume where you set it. If an app or Windows changes it, RETWEAKS puts it back within half a second, '
+                'even with this page closed. It follows whichever device is the default and never changes mute.'),
+                bg=g['PANEL'],fg=g['MUTED'],anchor='w',justify='left',font=(g['UI'],8))
+            note.pack(fill='x',padx=14);card.wrap(note,28)
         if device:
             actions=tk.Frame(card.body,bg=g['PANEL']);actions.pack(fill='x',padx=14,pady=(0,10))
             g['RButton'](actions,'Use as default',lambda:self.action(lambda:self.backend.set_default(item['id']))).pack(side='left',padx=(0,8))
@@ -197,4 +289,5 @@ class AudioPanel:
         if event.widget is not self.hub:return
         self.closed=True
         if self.job:self.hub.after_cancel(self.job);self.job=None
+        if self.lock_job:self.hub.after_cancel(self.lock_job);self.lock_job=None
         self.backend=None

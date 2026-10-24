@@ -3,7 +3,7 @@ import tempfile,time,hashlib
 from pathlib import Path
 from unittest.mock import Mock,patch
 from PIL import Image
-import automation,hubplus,perfhub as app
+import automation,hubplus,retweaks as app
 
 automation.Hotkeys=lambda *args:Mock()
 app.Hub._load_info=lambda self:None
@@ -49,7 +49,7 @@ try:
         pdf=page.windows['pdf'];pdf['paths'][:]=[str(source)]
         with patch('daily_tools.filedialog.askdirectory',return_value=str(root)):
             button(pdf['window'],'Create PDF').command();settle(pdf)
-        assert (root/'PerfHub_images.pdf').is_file()
+        assert (root/'RETWEAKS_images.pdf').is_file()
         checksum=page.windows['checksum']
         with patch('daily_tools.filedialog.askopenfilename',return_value=str(source)):
             button(checksum['window'],'Choose file').command();settle(checksum)

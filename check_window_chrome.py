@@ -1,12 +1,12 @@
 """Own-window checks for custom caption, themes and window state transitions."""
 import ctypes,time,tkinter as tk
 from types import SimpleNamespace
-import perfhub as app
+import retweaks as app
 from appearance import palette
 from window_chrome import WindowChrome
-root=tk.Tk();root.title('PerfHub window controls verification');root.geometry('1120x740+50+50');root.minsize(1060,680)
+root=tk.Tk();root.title('RETWEAKS window controls verification');root.geometry('1120x740+50+50');root.minsize(1060,680)
 g=vars(app).copy();body=tk.Frame(root,bg=g['BG']);body.pack(fill='both',expand=True)
-tk.Label(body,text='PerfHub window control verification',bg=g['BG'],fg=g['FG']).pack(pady=40)
+tk.Label(body,text='RETWEAKS window control verification',bg=g['BG'],fg=g['FG']).pack(pady=40)
 chrome=WindowChrome(root,g)
 errors=[];root.report_callback_exception=lambda *args:errors.append(args)
 def pump():

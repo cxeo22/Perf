@@ -47,10 +47,10 @@ def fallback(report):
         steps=['On a managed computer, ask your administrator whether this app is permitted.', 'Do not bypass the organization’s installation policy.']
     elif 'winget missing' in error or code==0x8A150007:
         cause='Windows Package Manager is missing or needs an update.'
-        steps=['Open Get Microsoft App Installer in App Starter and install or update it.', 'Reopen PerfHub, then retry the failed app.']
+        steps=['Open Get Microsoft App Installer in App Starter and install or update it.', 'Reopen RETWEAKS, then retry the failed app.']
     elif code==0x8A150056:
         cause='This installer does not allow installation from an administrator process.'
-        steps=['Use Official site to download the vendor’s installer.', 'Run that installer normally from your Windows account; PerfHub itself starts with administrator privileges.']
+        steps=['Use Official site to download the vendor’s installer.', 'Run that installer normally from your Windows account; RETWEAKS itself starts with administrator privileges.']
     elif code in (0x8A150019,5,0x80070005) or 'access denied' in error or 'permission' in error:
         cause='Windows could not access a required file, folder, or installation location.'
         steps=['Check that your Downloads folder is writable and has free space.', 'Close any running copy of the app, then retry.', 'For a managed computer, ask your administrator about installation policy.']

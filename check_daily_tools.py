@@ -6,7 +6,7 @@ from pypdf import PdfReader
 import daily_toolkit as tools
 
 tempfile.tempdir=str((Path(__file__).resolve().parent/'verification').resolve())
-with tempfile.TemporaryDirectory(prefix='PerfHub-tools-check-') as folder:
+with tempfile.TemporaryDirectory(prefix='RETWEAKS-tools-check-') as folder:
     assert Path(folder).resolve().is_relative_to(Path(tempfile.tempdir))
     root=Path(folder);source=root/'source.png';image=Image.new('RGBA',(600,300),(255,0,0,0));image.putpixel((0,0),(10,20,30,255));image.save(source)
     before=source.read_bytes()
@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory(prefix='PerfHub-tools-check-') as folder:
     try:tools.save_new(root,'broken','.tmp',lambda stream:(_ for _ in ()).throw(ValueError('failed')))
     except ValueError:assert not (root/'broken.tmp').exists()
     if '--ocr' in sys.argv:
-        sample=root/'ocr.png';im=Image.new('RGB',(1200,240),'white');ImageDraw.Draw(im).text((30,60),'PerfHub daily tools 123',font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',64),fill='black');im.save(sample)
+        sample=root/'ocr.png';im=Image.new('RGB',(1200,240),'white');ImageDraw.Draw(im).text((30,60),'RETWEAKS daily tools 123',font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',64),fill='black');im.save(sample)
         for source in [sample,im]:
             result=tools.extract_text(source);assert 'daily tools 123' in result['text'],result
         print('PASS: real local Windows OCR from a generated file and clipboard-style image.')

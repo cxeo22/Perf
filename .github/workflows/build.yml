@@ -1,0 +1,101 @@
+# Builds RETWEAKS.exe on a Windows server (CLAUDE.md section 16).
+#
+# - Pull requests / main / manual run: builds the .exe and attaches it to the run as a
+#   downloadable "artifact" (Actions tab -> the run -> Artifacts), for previewing.
+# - Pushing a tag like v1.2: builds the .exe and publishes the GitHub release, using
+#   release-notes/<tag>.md as the release text.
+# - Manual run (Actions tab -> Build RETWEAKS -> Run workflow) with "release_tag" filled in,
+#   e.g. v1.3: builds from main, creates that tag and publishes the release the same way.
+#   Leave it empty to only build a preview .exe.
+name: Build RETWEAKS
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Version to release, e.g. v1.3 (leave empty to only build a preview)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write   # needed to create the release on tag pushes
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests -q
+
+      - name: Display functions work on real Windows (names, native size, modes)
+        continue-on-error: true      # a runner has no real monitor; reported, not blocking
+        run: python tools/display_smoke.py
+
+      - name: Check the AI keys are set (releases only)
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        shell: pwsh
+        env:
+          RETWEAKS_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:RETWEAKS_GEMINI_KEY)) {
+            Write-Output "::error::The GEMINI_API_KEY repository secret is missing, so the AI assistant would have no keys. Add it (one key per line) in Settings > Secrets and variables > Actions, then run the release again."
+            exit 1
+          }
+          $n = ($env:RETWEAKS_GEMINI_KEY -split '[\s,|]+' | Where-Object { $_ }).Count
+          Write-Output "::notice::AI keys found in the GEMINI_API_KEY secret: $n"
+
+      - name: Build RETWEAKS.exe
+        env:
+          RETWEAKS_GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}   # private repo secret, never in the code
+        run: python build.py
+
+      - name: SHA-256 checksum (used by the in-app updater to verify downloads)
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/RETWEAKS.exe -Algorithm SHA256).Hash.ToLower()
+          "$h  RETWEAKS.exe" | Out-File -Encoding ascii dist/RETWEAKS.exe.sha256
+          Get-Content dist/RETWEAKS.exe.sha256
+
+      - name: Zip copy (for people who prefer downloading a .zip)
+        shell: pwsh
+        run: Compress-Archive -Path dist/RETWEAKS.exe -DestinationPath dist/RETWEAKS.zip -Force
+
+      - name: Upload .exe for preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: RETWEAKS-exe
+          path: |
+            dist/RETWEAKS.exe
+            dist/RETWEAKS.exe.sha256
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.release_tag }}
+        run: |
+          $tag = $env:TAG
+          if ($tag -notmatch '^v\d+(\.\d+)*$') { throw "Release tag must look like v1.3 (got '$tag')." }
+          $notes = "release-notes/$tag.md"
+          if (-not (Test-Path $notes)) { throw "Missing $notes - add release notes before releasing." }
+          # Re-releasing the same version (owner's choice, e.g. a fix right after publishing): remove the
+          # old release and its tag first, so the tag and files come from the commit just built.
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) { gh release delete $tag --cleanup-tag --yes }
+          $global:LASTEXITCODE = 0
+          # --target creates the tag on the exact commit that was just built
+          gh release create $tag dist/RETWEAKS.exe dist/RETWEAKS.zip dist/RETWEAKS.exe.sha256 --target "${{ github.sha }}" --title "RETWEAKS $tag" --notes-file $notes --latest

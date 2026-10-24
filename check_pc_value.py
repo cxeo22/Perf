@@ -55,7 +55,7 @@ try:
 except ValueError:
     pass
 
-import perfhub as app
+import retweaks as app
 import hubplus
 import automation
 class Hotkeys:

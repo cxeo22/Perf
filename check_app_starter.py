@@ -50,7 +50,7 @@ with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as tmp:
     with patch('app_starter.build_opener',return_value=Opener()),patch('app_starter.subprocess.run',return_value=Mock(returncode=0)) as verify:
         result=download_nvidia(tmp,threading.Event(),lambda _:None)
         assert result.read_bytes()==b'MZ-test-installer'
-        assert verify.call_args.kwargs['env']['PERFHUB_INSTALLER_PATH'].endswith('.part')
+        assert verify.call_args.kwargs['env']['RETWEAKS_INSTALLER_PATH'].endswith('.part')
     result.unlink()
     with patch('app_starter.build_opener',return_value=Opener()),patch('app_starter.subprocess.run',return_value=Mock(returncode=1)):
         try:download_nvidia(tmp,threading.Event(),lambda _:None)

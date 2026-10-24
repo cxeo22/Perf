@@ -11,10 +11,10 @@ with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as directo
     assert root.resolve().parent==Path(__file__).resolve().parent
     target_dir=root / "Portable build's folder with spaces"
     target_dir.mkdir()
-    target=target_dir/'PerfHub.exe';target.write_bytes(b'non-executable shortcut target fixture')
+    target=target_dir/'RETWEAKS.exe';target.write_bytes(b'non-executable shortcut target fixture')
     desktop=root/'Test desktop';desktop.mkdir()
     link=create_desktop_shortcut(target,desktop)
-    assert link==desktop/'PerfHub.lnk' and link.stat().st_size>0
+    assert link==desktop/'RETWEAKS.lnk' and link.stat().st_size>0
     inspect=r'''[Console]::InputEncoding=New-Object System.Text.UTF8Encoding($false); $p=[Console]::In.ReadToEnd(); $s=(New-Object -ComObject WScript.Shell).CreateShortcut($p); @{target=$s.TargetPath;working=$s.WorkingDirectory;arguments=$s.Arguments;icon=$s.IconLocation} | ConvertTo-Json -Compress'''
     result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',inspect],input=str(link),capture_output=True,text=True,encoding='utf-8',creationflags=0x08000000,timeout=15)
     assert result.returncode==0,result.stderr
@@ -35,7 +35,7 @@ with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as directo
         error.assert_called_once()
 print('PASS: one-time Yes/No prompt, remembered choice, retry after failure, and real shortcut target/icon/working-directory handling with spaces. Actual desktop untouched.')
 
-import perfhub as app
+import retweaks as app
 import hubplus
 import automation
 from unittest.mock import Mock

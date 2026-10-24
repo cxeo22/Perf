@@ -1,170 +1,105 @@
-<div align="center">
-  <h1>PerfHub</h1>
-  <h3>Your PC. One control hub.</h3>
-  <p>PC tools, hardware information, value estimates, and build planning<br>in one Windows desktop application.</p>
-  <p><b>Windows desktop app &nbsp; · &nbsp; GPL-3.0 &nbsp; · &nbsp; PC Value Checker Beta</b></p>
-  <p><a href="#easy-install-guide"><b>How to install</b></a> &nbsp; | &nbsp; <a href="https://perfhub-download.plumheron1.chatgpt.site/"><b>Visit the website</b></a> &nbsp; | &nbsp; <a href="#features"><b>Features</b></a></p>
-</div>
+<p align="center">
+  <img src="assets/brand/banner.png" alt="RETWEAKS" width="720">
+</p>
+
+<p align="center">
+  <b>Free Windows PC diagnostics and optimization.</b><br>
+  Real hardware readings, reversible tweaks, and honest results. No fake numbers.
+</p>
+
+<p align="center">
+  <a href="https://github.com/w1zr/retweaks/releases/latest"><b>Download the latest release</b></a> ·
+  <a href="https://w1zr.github.io/ReTweaks/"><b>Website</b></a> ·
+  <a href="https://discord.gg/fS5NwW9TPF"><b>Discord</b></a>
+</p>
 
 ---
 
-## New in v1.4
+## Current version: 2.0.8
 
-- **Audio Mixer:** app volume and mute, speaker and microphone controls, preferred playback/call devices, and a synchronized pop-out with Always on top.
-- **Storage Explorer:** drive usage, folder browsing, sortable file details, filtering, Windows file icons, and background folder reads.
-- **Refreshed appearance:** charcoal and white Graphite theme, monochrome feather branding, rounder controls, and an animated startup screen.
-- **Fixes:** smoother audio sliders, full-width particle animations, and corrected image-library packaging.
+This folder contains the current source, assets, bundled hardware tools, tests and Windows build workflow. See [GitHub setup](GITHUB_SETUP.md) before uploading. Generated EXEs are excluded from Git. The ignored local AI key file is private: push with Git and never upload that file through the browser.
 
-[Download PerfHub v1.4](https://github.com/cxeo22/Perf/releases/tag/v1.4) · [Changes since v1.3](https://github.com/cxeo22/Perf/releases/tag/v1.4)
+Recent changes include a merged Dashboard, grouped navigation, present-hardware driver matching, Windows backgrounds, contextual AI help, file transfers and embedded-browser fixes.
 
-## Easy install guide
+## What it does
 
-**You only need the PerfHub EXE. You do not need Python, source code, or developer tools.**
+**Monitor**
+- **Dashboard and Hardware:** CPU, GPU (exact model and real VRAM), motherboard and BIOS, RAM, drives and disk health, monitors, audio and network, plus live CPU and GPU load and clocks. Live temperatures (°C or °F) on the Dashboard and a Temperatures page.
+- **Health Check:** one scan of startup apps, temp files, power plan, disk health, free space, pending restarts, Windows Update, Game Mode, refresh rate and RAM. Each check has a **Fix** button where RETWEAKS can help.
+- **FPS test:** real average FPS, 1% lows and 0.1% lows measured with Intel PresentMon, with saved runs you can compare.
+- **In-game FPS overlay:** live FPS, 1% low and frame time over games in borderless or windowed fullscreen. Nothing is injected into the game.
+- **Display and drivers:** checks whether each monitor runs at its highest refresh rate, and shows your GPU driver version and age.
 
-### 1. Download
+**Optimize**
+- **Tweaks:** individual, explained tweaks, each with **Undo** and an "undo everything" option, plus a restore point.
+- **Profiles, Game presets and Program rules:**
+  - Game presets: Low, High, Ultra and Ultra Performance for Fortnite, Minecraft (Java and Bedrock), Apex Legends and Rocket League, or your own file. Backups are made first.
+  - Program rules: per-program GPU choice and CPU priority.
+  - Auto game mode and background calming.
+- **Startup apps:** registry entries, Startup folders and scheduled tasks, which you can disable and re-enable at any time.
+- **Network:** pick your own DNS, or go back to automatic; DNS speed test; ping test to 1.1.1.1.
 
-On this repository’s main page, click **Releases**, then open the newest release. Under **Assets**, click the file ending in **`.exe`**.
+- **Tuning library:** 117 more tweaks (including the Chris Titus Tech utility set), 12 quick presets (MAX FPS, Esports, Balanced, Streamer, Low-end, Laptop, Privacy, Clean & repair and more), Windows tweaks, and game profiles for 11 games.
+- **Drivers:** finds the latest NVIDIA, AMD and Intel drivers and Windows Update driver updates, and downloads and installs them inside RETWEAKS. It asks first and checks the file's digital signature.
 
-Choose the **PerfHub EXE**, rather than **Source code (zip)** or **Source code (tar.gz)**.
+**Tools**
+- **Storage and cleanup:** file explorer with drive usage, disk space analyzer, file search, and temp cleanup that always shows a preview first.
+- **Daily Tools:** image to text (Windows OCR), image converter and resizer, images to PDF, text toolbox, file checksum and color picker. All local.
+- **App Starter:** 100 curated apps for setting up a new PC, installed only when you choose.
+- **PC Value Checker (beta), 3D PC Builder, Bottleneck tester and a render benchmark.**
+- **Browser:** RETWEAKS's own browser on Microsoft's Edge engine (it runs as its own program, so it can't take RETWEAKS down), with tabs, private tabs, bookmarks as home-page shortcuts, history, downloads, zoom and your choice of search engine (Google, DuckDuckGo, Brave Search, Bing, Startpage or your own).
+- **Fan control and RGB lighting:** fan speeds and temperature-based fan curves (Silent, Balanced, Performance, Full or your own), and fan + RAM lighting (Solid, Breathing, Color cycle, Rainbow, brightness, profiles). Fans go back to automatic if a temperature can't be read, at 85 °C, and when RETWEAKS closes.
+- **Crosshair overlay:** 33 built-in crosshairs, an editor, share codes and a [community gallery](crosshairs/README.md). It sits on top of borderless/windowed games without touching the game; F9 shows or hides it. Follow each game's rules.
+- **Audio mixer** (speakers, microphone and per-app volume), **auto clicker and Fun tools:** mouse polling rate test, clicks-per-second test and reaction time test.
+- **AI assistant:** ask Google Gemini about your PC and RETWEAKS' tools through the built-in Gemini connection (your messages are sent to Google). It also helps with driver links, failed app installs and PC value estimates.
+- **Snapshots and Logs:** sensor logging to CSV, and a log of every change RETWEAKS made.
 
-### 2. Open
+**Everywhere:** search pages, settings and tweaks from the top bar (Ctrl+K); English, Español, Français, Deutsch and Português (Brasil) (machine translations, corrections welcome); a welcome tour on first start; optional automatic updates; tray icon with its own menu.
 
-Wait for the download to finish. Open your **Downloads** folder and double-click the PerfHub EXE.
+RETWEAKS never promises FPS gains. Use the FPS test to measure your own before and after.
 
-Windows will ask for administrator permission. Check that you are opening the PerfHub file you downloaded, then choose **Yes** to start it.
+## Bundled tools
 
-### 3. Choose your shortcut
+Temperatures, fan control and RGB lighting use two open-source programs that come **built into RETWEAKS**, so
+there's nothing extra to download or install:
+[LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) 0.9.6 (MPL-2.0) and
+[OpenRGB](https://openrgb.org/) 1.1 (GPL-2.0), unmodified, in `ai/sensors` and `ai/openrgb` with their licenses.
 
-The first time PerfHub runs, it asks whether you want a desktop shortcut. Choose **Yes** for easy access next time, or **No** to continue without one.
+CPU and motherboard temperatures, most fan control and usually RAM lighting also need the free
+[PawnIO](https://github.com/namazso/PawnIO.Setup/releases) driver, because Windows only allows that hardware to be
+read through a driver. It's a one-time install from PawnIO's official page; the Temperatures and Fan control pages
+and Settings have a button that opens it. GPU and drive temperatures usually work without it.
 
-### 4. Start using PerfHub
+## Install
 
-Choose a tool from the sidebar. It stays open when you switch tabs. Click **Hide sidebar** or press **Ctrl+B** to slide it closed; use **Show sidebar** or **Ctrl+B** to slide it open again.
+1. Download `RETWEAKS.exe`, or `RETWEAKS.zip` if you prefer a zip, from the [latest release](https://github.com/w1zr/retweaks/releases/latest).
+2. Run it. It asks for administrator rights, because many tweaks change system settings.
+3. Updates install from inside the app. When a new version is out, a bar appears at the top of every page.
 
-**That’s it. There is no separate installer to run after opening the EXE.** Keep the EXE in a folder where you want it to stay, especially if you create a shortcut to it.
+**Requirements:** Windows 10 or 11, 64-bit.
 
-<details>
-<summary><b>Need help getting started?</b></summary>
+> RETWEAKS isn't code-signed, so Windows SmartScreen or your antivirus may show a warning. All the source code is here on GitHub. Always download from the official releases page.
 
-- **Where is my download?** Open File Explorer and choose **Downloads**.
-- **I downloaded a folder of code.** Go back to the release and download the file ending in `.exe` under **Assets**.
-- **The website tabs do not load.** Install Microsoft Edge WebView2 Runtime if it is missing, then reopen PerfHub. The tabs open directly inside PerfHub and automatically retry temporary loading failures. Website browser checks and access restrictions can still require your attention.
-- **AI or live pricing is unavailable.** Check your internet connection. These features also depend on external services and available Gemini quota.
-- **Do I need Python?** No. Python is only needed if you want to work with the source code.
+## Build from source
 
-</details>
+For automatic Python/dependency setup on Windows, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\Setup-ReTweaks.ps1 -Build`. Missing WebView2, PawnIO and PresentMon install automatically when their feature is opened; Lively installs when animated wallpaper actions need it. Disable this in Settings > Feature dependencies if desired.
 
-## PerfHub website
 
-### [Visit the PerfHub website →](https://perfhub-download.plumheron1.chatgpt.site/)
-
-The PerfHub website introduces the application, shows its main tools through interface previews and feature tours, and provides a Windows download button. Use it to learn what PerfHub does before downloading.
-
-**The desktop app runs on your computer.** The website is a place to explore PerfHub and get the download; it does not apply Windows tweaks to your PC through your browser. For the newest published version, use this repository’s latest release.
-
-## Features
-
-<table>
-  <tr><th>Tool</th><th>What it does</th></tr>
-  <tr><td><b>PC Value Checker · Beta</b></td><td>Upload a PC photo, enter components, or use your detected hardware. Choose a country and currency to estimate new replacement and used resale value, with ranges, explanations, and sources where available.</td></tr>
-  <tr><td><b>3D PC Builder</b></td><td>Open BuildCores at its Create New Build page inside PerfHub.</td></tr>
-  <tr><td><b>Bottleneck calculator</b></td><td>Use the PC Builds website inside a full-size application tab.</td></tr>
-  <tr><td><b>AI assistant</b></td><td>Ask about your PC and PerfHub’s tools through the Gemini connection.</td></tr>
-  <tr><td><b>Hardware information</b></td><td>View detected components, system information, and live CPU and RAM usage.</td></tr>
-  <tr><td><b>Tuning &amp; Windows tools</b></td><td>Review presets, individual tweaks, game profiles, storage tools, backups, and activity records.</td></tr>
-  <tr><td><b>Drivers &amp; App Starter</b></td><td>Review driver support information and browse 100 curated apps with search, categories, setup bundles, and optional AI help for failed downloads or installs.</td></tr>
-  <tr><td><b>Benchmark &amp; themes</b></td><td>Run a browser rendering benchmark and customize the application’s appearance.</td></tr>
-</table>
-
-### Before you use online tools
-
-AI, live prices, and embedded websites need internet access. PC valuations are estimates, not guaranteed sale prices; some results use comparable parts or low-confidence estimates, and missing prices can produce partial totals. Review the component details and sources. Read proposed Windows changes before applying them.
-
-See [release notes](RELEASE_NOTES.md) for the latest changes documented with this source package.
-
-### App Starter: 100-app library
-
-Browse 100 curated apps for setting up a new PC, including browsers, media tools, launchers, productivity apps, developer tools and hardware utilities. The collection is not a measured worldwide download ranking. See the [full app list and official sources](APP_LIBRARY.md).
-
-Browse all 100 apps on one continuously scrolling page, with bundled app artwork. Search by name or filter by category; selections stay selected while filtering. The original setup packages remain available alongside New PC essentials, Developer and Creative tools bundles. Nothing is installed merely by browsing or selecting apps.
-
-If a download or installation fails, the app records the return code and a redacted log excerpt. Choose the failed app from the failure picker or use **Help fix this** on its card. The help window provides local guidance, **Ask AI to explain**, an explicit retry button, and the official website. AI receives the app/error details and the displayed redacted log excerpt when requested; it does not automatically execute fixes. Local guidance remains available if AI is disabled or unavailable. Retry download does not silently switch to installation.
-
-### Daily Tools
-
-Open **Daily Tools** in the sidebar for these local utilities:
-
-- **Image to text:** choose or paste a screenshot/photo, extract text, edit it, and copy it or save a UTF-8 TXT file. Uses Windows OCR and the installed Windows language support; no upload or AI key is needed. Review recognized text for mistakes.
-- **Image converter & resizer:** batch-export PNG, JPEG, WebP, BMP or ICO, with optional maximum width/height. Proportions are preserved; images are not enlarged. ICO uses transparent square padding up to 256 pixels.
-- **Images to PDF:** add up to 50 images, reorder the pages, and create a PDF. Each image becomes one page, with a 2400-pixel size limit for larger images.
-- **Text toolbox:** trim, deduplicate or sort lines, remove blank lines, change case, format JSON, and encode/decode URLs or Base64. Includes Undo, Copy and Save TXT.
-- **File checksum:** calculate SHA-256 and compare it with a publisher-provided value. A match verifies identical contents, not whether a file is safe.
-- **Image color picker:** click an image preview to sample its corresponding original pixel and read RGB values or copy the HEX color.
-
-Optional switches keep PerfHub on top or keep the PC/display awake while PerfHub remains open. Turning off keep-awake or closing PerfHub releases its sleep request. These tools do not require PowerToys.
-
-Image/PDF exports use new filenames and do not overwrite originals. Transparency becomes white for JPEG, BMP and PDF; image exports omit source EXIF/GPS metadata. Animated inputs export their first frame. OCR requires an installed Windows OCR language (Windows Settings → Time & language → Language & region).
-
-## Open source
-
-Project-owned code is licensed under **GNU GPL version 3 only (GPL-3.0-only)**. Read [LICENSE](LICENSE) for the full terms. Third-party components retain their own licenses; WebView2 license and notice files are included in `ai/`.
-
----
-
-## For developers
-
-**Regular users can skip this section. Downloading and running the release EXE is enough.**
-
-<details>
-<summary><b>Expand developer setup and build instructions</b></summary>
-
-### Prerequisites
-
-- 64-bit Python with Tkinter and the Python launcher (`py`).
-- Windows .NET Framework C# compiler at `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`.
-- Microsoft Edge WebView2 Runtime to use the embedded website tabs.
-- Internet access to install Python build dependencies.
-
-### Build the executable
-
-Run this from the source folder, or double-click the file:
-
-```bat
-build_exe.bat
+```powershell
+git clone https://github.com/w1zr/retweaks.git
+cd retweaks
+python -m pip install -r requirements.txt
+python -m pytest tests     # run the tests
+python retweaks.py         # run from source (Windows)
+python build.py            # build dist\RETWEAKS.exe (Windows only; compiles the C# helpers in ai\ first)
 ```
 
-The script installs PyInstaller, Pillow, and pycaw, compiles GeminiChat and the other C# helpers, and packages:
+Built with Python and Tkinter, plus small C# helpers (in `ai/`) for the AI and embedded web tabs. Every release is built on GitHub Actions on a Windows runner.
 
-```text
-dist/PerfHub.exe
-```
+## License
 
-The packaged application requests administrator privileges when launched. The destination PC does not need Python installed.
+RETWEAKS is licensed under the **GNU General Public License v3.0 only** (see [LICENSE](LICENSE)). Third-party components keep their own licenses; the WebView2 license and notice files are in `ai/`.
 
-### Run from Python
+## Reporting a problem
 
-```bat
-py -m pip install Pillow pycaw
-py perfhub.py
-```
-
-The helper programs in `ai/` are also required for AI and embedded browser features. Recompile them after changing their C# source.
-
-### Source map
-
-| Files | Purpose |
-| --- | --- |
-| `perfhub.py`, `hubplus.py` | Main application and pages |
-| Other Python modules | Hardware inventory, valuation, Windows tools, themes, and browser lifecycle |
-| `check_*.py` | Development checks; inspect each before running, since some use live services |
-| `ai/*.cs` | Native AI client and helper source |
-| `ai/build.ps1` | Standalone GeminiChat build script |
-| `assets/` | Application artwork and icons |
-| `renderbench.html` | Browser rendering benchmark |
-| `PerfHub.spec`, `build_exe.bat` | Executable packaging and build configuration |
-
-</details>
-
-The GeminiChat source is included, and the main build compiles the application-owned C# helpers. The shared Gemini credential is retained at the owner’s request; service access and quota still apply.
-
-Developer checks for Daily Tools: `check_daily_tools.py` uses Pillow and pypdf; `--ocr` also checks the real Windows OCR engine using generated images. `check_daily_tools_ui.py` uses mocked file dialogs and temporary generated files.
+Open an [issue](https://github.com/w1zr/retweaks/issues). In the app, **Settings → Report a problem** copies a hardware report (no personal info) for you to paste.

@@ -1,4 +1,4 @@
-"""One-time desktop shortcut offer for packaged PerfHub builds."""
+"""One-time desktop shortcut offer for packaged RETWEAKS builds."""
 import json
 import os
 from pathlib import Path
@@ -14,13 +14,13 @@ $ErrorActionPreference='Stop'
 $request=[Console]::In.ReadToEnd() | ConvertFrom-Json
 $desktopPath=if($request.desktop){[string]$request.desktop}else{[Environment]::GetFolderPath('DesktopDirectory')}
 if(-not $desktopPath -or -not (Test-Path -LiteralPath $desktopPath -PathType Container)){throw 'The desktop folder could not be found.'}
-$shortcutPath=Join-Path $desktopPath 'PerfHub.lnk'
+$shortcutPath=Join-Path $desktopPath 'RETWEAKS.lnk'
 $shell=New-Object -ComObject WScript.Shell
 $shortcut=$shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath=[string]$request.target
 $shortcut.WorkingDirectory=[IO.Path]::GetDirectoryName([string]$request.target)
 $shortcut.Arguments=''
-$shortcut.Description='Open PerfHub'
+$shortcut.Description='Open RETWEAKS'
 $shortcut.IconLocation=([string]$request.target)+',0'
 $shortcut.Save()
 if(-not (Test-Path -LiteralPath $shortcutPath -PathType Leaf)){throw 'Windows did not create the shortcut.'}
@@ -30,7 +30,7 @@ if(-not (Test-Path -LiteralPath $shortcutPath -PathType Leaf)){throw 'Windows di
 def create_desktop_shortcut(target, desktop=None):
     target = Path(target).resolve()
     if target.suffix.lower() != '.exe' or not target.is_file():
-        raise OSError('The PerfHub executable could not be found.')
+        raise OSError('The RETWEAKS executable could not be found.')
     result = subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',SHORTCUT_SCRIPT],
                             input=json.dumps({'target':str(target),'desktop':str(Path(desktop).resolve()) if desktop else None}),
                             capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=20,
@@ -50,12 +50,12 @@ def offer_desktop_shortcut(parent, settings_root, target=None):
         state = {}
     if isinstance(state, dict) and state.get('desktop_shortcut_prompted') is True:
         return False
-    accepted = messagebox.askyesno('Welcome to PerfHub', 'Would you like to create a PerfHub desktop shortcut?', parent=parent)
+    accepted = messagebox.askyesno('Welcome to RETWEAKS', 'Would you like to create a RETWEAKS desktop shortcut?', parent=parent)
     try:
         shortcut = create_desktop_shortcut(target or sys.executable) if accepted else None
     except (OSError, subprocess.TimeoutExpired) as exc:
         detail = 'Windows took too long creating the shortcut.' if isinstance(exc, subprocess.TimeoutExpired) else str(exc)
-        messagebox.showerror('Desktop shortcut', detail + '\nPerfHub will ask again next time.', parent=parent)
+        messagebox.showerror('Desktop shortcut', detail + '\nRETWEAKS will ask again next time.', parent=parent)
         return False
     temporary = state_path.with_name('first_run.' + uuid.uuid4().hex + '.tmp')
     try:
@@ -63,7 +63,7 @@ def offer_desktop_shortcut(parent, settings_root, target=None):
         temporary.write_text(json.dumps({'desktop_shortcut_prompted':True,'desktop_shortcut_created':bool(shortcut)},indent=2),encoding='utf-8')
         os.replace(temporary,state_path)
     except OSError:
-        messagebox.showwarning('First-run preference', 'Your shortcut choice could not be saved. PerfHub may ask again next time.', parent=parent)
+        messagebox.showwarning('First-run preference', 'Your shortcut choice could not be saved. RETWEAKS may ask again next time.', parent=parent)
     finally:
         if temporary.exists():
             try:temporary.unlink()

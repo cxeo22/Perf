@@ -9,7 +9,7 @@ SLUGS.update(drive='google-drive',epic='epic-games',capcut='cap-cut',teams='micr
 CURATED=json.loads((OUT/'sources.json').read_text(encoding='utf-8')) if (OUT/'sources.json').is_file() else {}
 REV='b409eb0d1fa960277f8510d3ae3a19093b910ca4'
 def get(url):
-    with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 PerfHub asset preparation'}),timeout=18) as response:return response.read(5000000)
+    with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 RETWEAKS asset preparation'}),timeout=18) as response:return response.read(5000000)
 def one(row):
     key,name,_,_,site=row;candidates=[CURATED[key]['url']] if isinstance(CURATED.get(key),dict) else []
     if key in SLUGS:candidates.append(f'https://raw.githubusercontent.com/homarr-labs/dashboard-icons/{REV}/png/{SLUGS[key]}.png')

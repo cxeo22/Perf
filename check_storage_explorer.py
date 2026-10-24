@@ -5,7 +5,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
 from unittest.mock import Mock
-import perfhub as app
+import retweaks as app
 from storage_explorer import StorageExplorer,scan_directory,size_text,list_drives
 
 def pump_until(condition):

@@ -1,4 +1,4 @@
-"""Reversible fixed-width sidebar slide; content relayouts only at endpoints."""
+"""Reversible sidebar reveal with synchronized content layout."""
 import time
 import tkinter as tk
 
@@ -28,7 +28,8 @@ class SidebarFade:
         start = self.width
         target = 0 if collapsed else self.full_width
         if not self.root.sidebar_slot.winfo_manager():
-            self.sidebar.place_configure(x=start-self.full_width)
+            self.root.sidebar_slot.configure(width=max(1,start))
+            self.sidebar.place_configure(x=0)
             self.apply_layout(False)
         began = time.monotonic()
         def tick():
@@ -36,7 +37,8 @@ class SidebarFade:
             elapsed = min(1, (time.monotonic() - began) / self.DURATION)
             eased = elapsed * elapsed * (3 - 2 * elapsed)
             self.width = round(start + (target - start) * eased)
-            self.sidebar.place_configure(x=self.width-self.full_width)
+            self.root.sidebar_slot.configure(width=max(1,self.width))
+            self.sidebar.place_configure(x=0)
             if elapsed >= 1:self.finish(collapsed)
             else:self.job = self.root.after(12, tick)
         tick()
@@ -44,6 +46,7 @@ class SidebarFade:
     def finish(self, collapsed):
         self.cancel()
         self.width = 0 if collapsed else self.full_width
+        self.root.sidebar_slot.configure(width=max(1,self.width))
         if collapsed:self.apply_layout(True)
         self.sidebar.place_configure(x=0)
         if not collapsed:self.apply_layout(False)

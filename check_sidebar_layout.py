@@ -2,7 +2,7 @@
 from unittest.mock import Mock,patch
 from types import SimpleNamespace
 import time
-import perfhub as app
+import retweaks as app
 import hubplus
 import automation
 
@@ -33,10 +33,11 @@ try:
     hub.toggle_sidebar();hub.update()
     assert hub.sidebar_fade.job is not None
     time.sleep(.065);hub.update()
-    halfway=hub.sidebar.winfo_x()
-    assert -244<halfway<0,halfway
+    halfway=hub.sidebar_slot.winfo_width()          # base app v1.5: the slot (and content) resize during the slide
+    assert 0<halfway<244,halfway
+    assert hub.sidebar.winfo_x()==0
     assert hub.sidebar.winfo_width()==244
-    assert hub.content.winfo_width()==narrow
+    assert narrow<hub.content.winfo_width()<=narrow+245,(narrow,hub.content.winfo_width(),halfway)
     pump()
     assert not hub.sidebar.winfo_ismapped()
     assert hub.content.winfo_width()>=narrow+200

@@ -9,7 +9,7 @@ from urllib.parse import urlencode,urljoin,urlsplit
 from urllib.request import Request,build_opener,HTTPRedirectHandler
 from drivers import allowed_url,clean
 
-AGENT='Mozilla/5.0 (compatible; PerfHub Driver Links)'
+AGENT='Mozilla/5.0 (compatible; RETWEAKS Driver Links)'
 def fetch(url,domains,limit=400000):
     class Redirect(HTTPRedirectHandler):
         def redirect_request(self,request,fp,code,msg,headers,newurl):

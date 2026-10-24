@@ -5,7 +5,7 @@ import tkinter as tk
 from appearance import palette
 from embedded_ai import EmbeddedAI
 
-root=tk.Tk();root.title('PerfHub embedded AI verification');root.geometry('1000x760')
+root=tk.Tk();root.title('RETWEAKS embedded AI verification');root.geometry('1000x760')
 frame=tk.Frame(root);frame.pack(fill='both',expand=True)
 root.update()
 events=queue.Queue()
@@ -21,7 +21,7 @@ def wait_for(kind,timeout=15):
         except queue.Empty:time.sleep(.025);continue
         assert data_kind=='ai_event'
         if data['type']=='error':raise AssertionError(data['message'])
-        if data['type']=='context_request':bridge.send({'op':'context','instructions':'PerfHub offline test instructions','snapshot':context_snapshot})
+        if data['type']=='context_request':bridge.send({'op':'context','instructions':'RETWEAKS offline test instructions','snapshot':context_snapshot})
         if data['type']==kind:return data
     raise AssertionError('Timed out waiting for '+kind)
 try:
@@ -90,7 +90,7 @@ try:
     frame.pack_forget();root.update()
     frame.pack(fill='both',expand=True);root.update()
     bridge.send({'op':'inspect'});assert wait_for('state')['embedded']
-    bridge.send({'op':'test-capture','path':r'C:/Users/gabri/Downloads/PerfHub/PerfHub/ai-preview.png'})
+    bridge.send({'op':'test-capture','path':r'C:/Users/gabri/Downloads/RETWEAKS/RETWEAKS/ai-preview.png'})
     wait_for('captured')
     process=bridge.process
     bridge.close();process.wait(timeout=5)

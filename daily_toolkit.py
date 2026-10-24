@@ -62,7 +62,7 @@ def images_to_pdf(paths,folder):
             pixels+=page.width*page.height
             if pixels>80000000:page.close();raise ValueError('This PDF is too large. Split it into smaller groups of images.')
             pages.append(page)
-        return save_new(folder,'PerfHub_images','.pdf',lambda stream:pages[0].save(stream,format='PDF',save_all=True,append_images=pages[1:],resolution=150))
+        return save_new(folder,'RETWEAKS_images','.pdf',lambda stream:pages[0].save(stream,format='PDF',save_all=True,append_images=pages[1:],resolution=150))
     finally:
         for page in pages:page.close()
 
@@ -90,7 +90,7 @@ TEXT_ACTIONS=['Trim lines','Remove blank lines','Remove duplicate lines','Sort l
 
 # Windows OCR API: https://learn.microsoft.com/uwp/api/windows.media.ocr.ocrengine
 def extract_text(source):
-    with tempfile.TemporaryDirectory(prefix='PerfHub-OCR-') as folder:
+    with tempfile.TemporaryDirectory(prefix='RETWEAKS-OCR-') as folder:
         path=Path(folder)/'image.png'
         with (source.copy() if isinstance(source,Image.Image) else Image.open(source)) as original:
             image=opaque(ImageOps.exif_transpose(original));image.thumbnail((2500,2500),Image.Resampling.LANCZOS);image.save(path)

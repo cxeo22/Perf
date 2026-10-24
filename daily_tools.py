@@ -16,8 +16,8 @@ class DailyToolsPage:
         self.awake=tk.BooleanVar(value=False);self.top=tk.BooleanVar(value=False)
         body=hub.page(tab,'Daily Tools','Useful everyday tools. Files stay on your computer; no sign-in or AI connection is needed.')
         options=tk.Frame(body,bg=g['BG']);options.pack(fill='x',padx=16,pady=10)
-        g['RCheck'](options,'Keep PerfHub on top',self.top,command=self.on_top).pack(side='left',padx=(0,20))
-        g['RCheck'](options,'Keep PC awake while PerfHub is open',self.awake,command=self.keep_awake).pack(side='left')
+        g['RCheck'](options,'Keep RETWEAKS on top',self.top,command=self.on_top).pack(side='left',padx=(0,20))
+        g['RCheck'](options,'Keep PC awake while RETWEAKS is open',self.awake,command=self.keep_awake).pack(side='left')
         self.power_status=hub.label(body,'Normal sleep settings are active.',9,g['MUTED'])
         grid=tk.Frame(body,bg=g['BG']);grid.pack(fill='x')
         tools=[('OCR','Image to text','Extract text from a photo or screenshot, or paste an image. Edit the result, copy it, or save a text file.',self.ocr),
@@ -39,11 +39,11 @@ class DailyToolsPage:
         flags=0x80000003 if self.awake.get() else 0x80000000
         if not ctypes.windll.kernel32.SetThreadExecutionState(flags):
             self.awake.set(False);self.power_status.config(text='Windows could not change the sleep request.');return
-        self.power_status.config(text='Keeping the PC and display awake while PerfHub is open. Closing PerfHub restores normal sleep behavior.' if self.awake.get() else 'Normal sleep settings are active.')
+        self.power_status.config(text='Keeping the PC and display awake while RETWEAKS is open. Closing RETWEAKS restores normal sleep behavior.' if self.awake.get() else 'Normal sleep settings are active.')
     def window(self,key,title):
         old=self.windows.get(key)
         if old and old['window'].winfo_exists():old['window'].lift();return None
-        win=tk.Toplevel(self.hub);win.title(title+' - PerfHub');win.geometry('920x730');win.minsize(720,560);win.configure(bg=self.g['BG']);win.transient(self.hub)
+        win=tk.Toplevel(self.hub);win.title(title+' - RETWEAKS');win.geometry('920x730');win.minsize(720,560);win.configure(bg=self.g['BG']);win.transient(self.hub)
         self.hub.label(win,title,20)
         state={'window':win,'busy':False,'closed':False,'cancel':threading.Event()};self.windows[key]=state
         def close():state['closed']=True;state['cancel'].set();win.destroy()
@@ -225,7 +225,7 @@ class DailyToolsPage:
         state=self.window('color','Image color picker')
         if not state:return
         win=state['window'];self.label(win,'Choose an image, then click its preview to sample a pixel. Transparent pixels are displayed against white.')
-        row=self.row(win);value=tk.StringVar(value='No color selected');self.label(win,'HEX and RGB:');tk.Entry(win,textvariable=value,state='readonly',font=(self.g['UI'],13),readonlybackground=self.g['PANEL'],fg=self.g['FG']).pack(fill='x',padx=16,pady=8)
+        row=self.row(win);value=tk.StringVar(value='No color selected');self.label(win,'HEX and RGB:');field=self.g['REntry'](win,value);field.entry.configure(state='readonly',readonlybackground=self.g['PANEL2']);field.pack(fill='x',padx=16,pady=8)
         preview=tk.Label(win,bg=self.g['PANEL']);preview.pack(expand=True,pady=10)
         status=self.label(win,'Choose an image to begin.')
         def choose():

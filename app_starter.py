@@ -58,7 +58,7 @@ class NvidiaRedirect(HTTPRedirectHandler):
 
 def nvidia_link():
     opener=build_opener(NvidiaRedirect())
-    req=Request(APPS['nvidia'][4],headers={'User-Agent':'PerfHub App Starter/1.0'})
+    req=Request(APPS['nvidia'][4],headers={'User-Agent':'RETWEAKS App Starter/1.0'})
     with opener.open(req,timeout=25) as response:page=response.read(3000000).decode('utf-8',errors='replace')
     links=[html.unescape(u) for u in re.findall(r'https://[^\s\"<>]+?\.exe',page) if 'nvidia_app' in u.lower()]
     link=next((u for u in links if nvidia_url(u)),None)
@@ -73,7 +73,7 @@ def download_nvidia(destination,cancel,progress,link=None):
     target=Path(destination)/'nvidia';target.mkdir(parents=True,exist_ok=True)
     final=target/'NVIDIA-App-Setup.exe';partial=target/'NVIDIA-App-Setup.exe.part'
     try:
-        with opener.open(Request(link,headers={'User-Agent':'PerfHub App Starter/1.0'}),timeout=30) as response,partial.open('wb') as out:
+        with opener.open(Request(link,headers={'User-Agent':'RETWEAKS App Starter/1.0'}),timeout=30) as response,partial.open('wb') as out:
             if 'text/html' in response.headers.get('Content-Type','').lower():raise OSError('Server returned a web page instead of an installer')
             total=int(response.headers.get('Content-Length') or 0);received=0;last=0
             while True:
@@ -86,8 +86,8 @@ def download_nvidia(destination,cancel,progress,link=None):
                     progress(f'Downloading {received//1048576} MB'+(f' / {total//1048576} MB' if total else ''));last=time.monotonic()
         if not received or (total and received!=total):raise OSError('Download was truncated or empty; please retry.')
         # Do not run a direct download unless Windows verifies its publisher signature.
-        script="$s=Get-AuthenticodeSignature -LiteralPath $env:PERFHUB_INSTALLER_PATH; if($s.Status -eq 'Valid' -and $s.SignerCertificate.Subject -match 'NVIDIA'){exit 0}else{exit 1}"
-        check=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],env={**os.environ,'PERFHUB_INSTALLER_PATH':str(partial)},capture_output=True,timeout=45,creationflags=0x08000000)
+        script="$s=Get-AuthenticodeSignature -LiteralPath $env:RETWEAKS_INSTALLER_PATH; if($s.Status -eq 'Valid' -and $s.SignerCertificate.Subject -match 'NVIDIA'){exit 0}else{exit 1}"
+        check=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],env={**os.environ,'RETWEAKS_INSTALLER_PATH':str(partial)},capture_output=True,timeout=45,creationflags=0x08000000)
         if check.returncode:raise OSError('NVIDIA publisher signature could not be verified; use Official site.')
         partial.replace(final);return final
     finally:
@@ -171,7 +171,7 @@ class Runner:
 class AppStarterPage:
     def __init__(self,hub,tab,g,root):
         self.hub=hub;self.g=g;self.events=queue.Queue();self.closed=False;self.rows={};self.choices={};self.releases={};self.statuses={};self.expanded=set();self.checking=False;self.review_stop=threading.Event();self.failures={};self.help_windows={};self.filter_job=None;self.cards={}
-        self.destination=Path.home()/'Downloads'/'PerfHub Apps';self.runner=Runner(self.events,self.destination,enable_ai=hub.enable_ai)
+        self.destination=Path.home()/'Downloads'/'RETWEAKS Apps';self.runner=Runner(self.events,self.destination,enable_ai=hub.enable_ai)
         body=hub.page(tab,'App Starter','100 useful apps for a new PC. Browse by category, review a package, and choose what to install.')
         hub.label(body,'Install downloads and sets up the selected apps, or updates an existing version. Starting accepts their license agreements. Some vendor setups need your input.',10,g['MUTED'])
         toolbar=tk.Frame(body,bg=g['BG']);toolbar.pack(fill='x',padx=16,pady=8)

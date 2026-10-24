@@ -64,7 +64,7 @@ class StorageExplorer:
         self.events=queue.Queue();self.cancel=threading.Event();self.history=[];self.current=None
         self.rows=[];self.shown={};self.drive_rows={};self.order=('name',False);self.paint_job=None
         self.path=tk.StringVar(value=str(Path.home()));self.query=tk.StringVar()
-        g['page_header'](tab,'PERFHUB','Storage Explorer','Explore drives and folders, compare space usage, and find your files.')
+        g['page_header'](tab,'RETWEAKS','Storage Explorer','Explore drives and folders, compare space usage, and find your files.')
         body=tk.Frame(tab,bg=g['BG']);body.pack(fill='both',expand=True,padx=14,pady=(0,12))
         self.style=ttk.Style(hub)
         self.drives=self.table(body,('drive','system','total','used','free','usage'),

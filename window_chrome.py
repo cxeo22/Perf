@@ -1,16 +1,24 @@
 from branding import feather
+from core.version import BRAND
 """Theme-aware custom caption with native resize/minimize/maximize and fullscreen."""
 import ctypes
 from ctypes import wintypes
 import tkinter as tk
+import tkinter.font as tkfont
 import re
 from appearance import blend
+
+_fonts={}
+def _label_font(g):
+    spec=(g['UI'],9,'bold')
+    if spec not in _fonts:_fonts[spec]=tkfont.Font(font=spec)
+    return _fonts[spec]
 
 class WindowChrome(tk.Canvas):
     def __init__(self,root,g):
         super().__init__(root,height=48,bg=g['BG'],highlightthickness=0,bd=0)
         self.root=root;self.g=g;self.fullscreen=False;self.saved=None;self.hover=None;self.buttons={};self.native_ready=False;self.drag=None;self.pressed=None;self.closed=False;self.transition=0;self.windowed_geometry=None;self._applying=False
-        self.pack(side='top',fill='x',before=root.winfo_children()[0])
+        self.pack(side='top',fill='x',before=next(w for w in root.winfo_children() if not isinstance(w,tk.Toplevel)))
         self.bind('<Configure>',lambda event:self.refresh())
         self.bind('<Motion>',self.motion);self.bind('<B1-Motion>',self.drag_motion);self.bind('<ButtonRelease-1>',self.release);self.bind('<Leave>',lambda event:self.set_hover(None))
         self.bind('<Button-1>',self.press);self.bind('<Double-Button-1>',self.double)
@@ -76,16 +84,23 @@ class WindowChrome(tk.Canvas):
         except tk.TclError:return
         g=self.g;w=max(300,self.winfo_width());self.configure(bg=g['BG']);self.delete('all')
         self.create_polygon(g['rr'](7,5,w-7,46,21),smooth=True,fill=g['SIDE'],outline=blend(g['SIDE'],g['LINE'],.38),width=1)
-        # Small feather emblem, matching PerfHub's loading screen.
-        if not hasattr(self,'_feather'):self._feather=feather(self,32)
+        # Owner request 2026-10-22: no chip/wordmark here (the sidebar header already shows them).
         menu=callable(getattr(self.root,'toggle_sidebar',None))
-        offset=166 if menu else 0
-        self.create_image(32+offset,25,image=self._feather)
-        self.create_text(52+offset,25,text='PERFHUB',anchor='w',fill=g['FG'],font=(g['UI'],11,'bold'))
-        self.create_text(152+offset,26,text='PERFORMANCE HUB',anchor='w',fill=g['MUTED'],font=(g['UI'],8))
+        # the menu button fits its label (translated labels can be longer than 'Hide sidebar'; rt_i18n)
+        label='Show sidebar' if getattr(self.root,'sidebar_collapsed',False) else 'Hide sidebar'
+        try:
+            import rt_i18n;shown=rt_i18n.tr(label)
+        except Exception:shown=label
+        try:menu_right=max(164,53+int(_label_font(g).measure(shown))+14)
+        except Exception:menu_right=164
+        offset=menu_right+2 if menu else 0
+        search=getattr(self.root,'global_search',None)     # top-bar search (rt_search)
+        if search is not None:
+            try:search.place(self,w)
+            except Exception as e:print('search bar',e)
         positions=[('minimize',w-128,w-92),('maximize',w-88,w-52),('close',w-48,w-12)]
         self.buttons={name:(left,10,right,40) for name,left,right in positions}
-        if menu:self.buttons['menu']=(14,8,164,42)
+        if menu:self.buttons['menu']=(14,8,menu_right,42)
         for name,(left,top,right,bottom) in self.buttons.items():
             if self.hover==name and name!='menu':self.create_oval(left+3,top,right-3,bottom,fill=g['PANEL2'],outline='')
             x=(left+right)/2;y=25;color=g['ACC']
@@ -135,7 +150,7 @@ class WindowChrome(tk.Canvas):
     def release(self,event):
         action=self.pressed;self.pressed=None;self.drag=None
         if action is None or self.hit(event.x,event.y)!=action:return
-        if action=='close':self.root.destroy()
+        if action=='close':getattr(self.root,'request_close',self.root.destroy)()
         elif action=='menu':self.root.toggle_sidebar()
         elif action=='minimize':self.minimize()
         elif action=='maximize':self.maximize()

@@ -7,7 +7,7 @@ import math
 import subprocess
 import threading
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, ttk, simpledialog
 from pathlib import Path
 from urllib.parse import urlsplit
 import webbrowser
@@ -256,9 +256,14 @@ class PCValuePage:
         for title, var, values, state in [('Country', self.country, COUNTRIES, 'normal'), ('Currency', self.currency, CURRENCIES, 'readonly'),
                                          ('Condition', self.condition, ('Like new', 'Good — fully working', 'Fair — working with wear', 'Faulty / for parts'), 'readonly')]:
             hub.label(settings, title)
-            widget = ttk.Combobox(settings, textvariable=var, values=values, state=state, style='PerfHub.TCombobox', width=40)
-            widget.pack(anchor='w', padx=16, pady=4)
-            widget.bind('<Button-1>', lambda event: event.widget.focus_force(), add='+')
+            widget = g['RSelect'](settings,values,width=360,command=var.set)
+            widget.set(var.get());widget.pack(anchor='w',padx=16,pady=6)
+            var.trace_add('write',lambda *args,selector=widget,variable=var:selector.set(variable.get()))
+            if state=='normal':
+                def custom_country(variable=var):
+                    value=simpledialog.askstring('Country','Enter your country or market:',initialvalue=variable.get(),parent=hub)
+                    if value and value.strip():variable.set(value.strip()[:120])
+                hub.action(settings,'Enter another country',custom_country)
             var.trace_add('write', self.invalidate)
         photos = hub.box(body, '2. Add a computer photo (optional)', 'Choose a JPG, PNG or WebP photo. Analyze photo sends only that image to the existing Gemini connection. Hidden parts and unreadable labels must be entered manually.')
         self.photo_label = hub.label(photos, 'No photo selected.')
@@ -267,20 +272,24 @@ class PCValuePage:
         hub.action(photos, 'Remove photo', self.remove_photo)
         parts = hub.box(body, '3. List or confirm components', 'Use this PC’s existing hardware scan, enter parts manually, or review photo suggestions. Confirm exact models, capacities and quantities. Unknown parts are excluded from the estimate.')
         hub.action(parts, 'Use this PC’s components', self.use_this_pc)
-        hub.label(parts, 'Fills CPU, separate graphics cards, motherboard, RAM and physical drives from PerfHub’s scan. Power supply, case, cooling and Other stay as entered. No data is sent until you check value.', color=g['MUTED'])
+        hub.label(parts, 'Fills CPU, separate graphics cards, motherboard, RAM and physical drives from RETWEAKS’s scan. Power supply, case, cooling and Other stay as entered. No data is sent until you check value.', color=g['MUTED'])
         self.confirmed = tk.BooleanVar(value=False)
         self.parts = {}
+        component_grid=tk.Frame(parts,bg=g['PANEL']);component_grid.pack(fill='x',padx=10,pady=8)
+        fields=[]
         for kind in KINDS:
-            hub.label(parts, kind)
-            var = tk.StringVar()
-            entry = tk.Entry(parts, textvariable=var, bg=g['PANEL'], fg=g['FG'], insertbackground=g['FG'], font=(g['UI'], 10))
-            entry.pack(fill='x', padx=16, pady=(0, 5))
-            entry.bind('<Button-1>', lambda event: event.widget.focus_force(), add='+')
-            var.trace_add('write', self.edit_parts)
-            self.parts[kind] = var
-        self.confirm = tk.Checkbutton(parts, text='I have reviewed these components and quantities.', variable=self.confirmed,
-                                     bg=g['PANEL'], fg=g['FG'], selectcolor=g['BG'], activebackground=g['PANEL'], activeforeground=g['FG'])
-        self.confirm.pack(anchor='w', padx=16, pady=12)
+            field=tk.Frame(component_grid,bg=g['PANEL']);fields.append(field)
+            hub.label(field,kind)
+            var=tk.StringVar();entry=g['REntry'](field,var)
+            entry.pack(fill='x',padx=12,pady=(0,12))
+            var.trace_add('write',self.edit_parts);self.parts[kind]=var
+        def arrange(event=None):
+            columns=2 if component_grid.winfo_width()>740 else 1
+            for column in range(2):component_grid.columnconfigure(column,weight=1 if column<columns else 0,uniform='components')
+            for index,field in enumerate(fields):field.grid(row=index//columns,column=index%columns,sticky='ew')
+        component_grid.bind('<Configure>',arrange);arrange()
+        self.confirm = g['RCheck'](parts,'I have reviewed these components and quantities.',self.confirmed,outer=g['PANEL'])
+        self.confirm.pack(anchor='w',padx=16,pady=12)
         hub.action(parts, 'Check current value', self.estimate)
         self.status = hub.label(body, 'Ready. No photo or component details have been sent.', color=g['MUTED'])
         self.results = tk.Frame(body, bg=g['BG'])
@@ -305,7 +314,7 @@ class PCValuePage:
             return
         values = detected_components(getattr(self.hub, 'info', None))
         if not values:
-            self.status.config(text='Hardware details are not available yet. Let PerfHub finish its startup scan, then click Use this PC’s components again.')
+            self.status.config(text='Hardware details are not available yet. Let RETWEAKS finish its startup scan, then click Use this PC’s components again.')
             return
         for kind in ('CPU', 'GPU', 'Motherboard', 'RAM', 'Storage'):
             self.parts[kind].set(values.get(kind, ''))
